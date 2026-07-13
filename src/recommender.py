@@ -78,7 +78,7 @@ def load_songs(csv_path: str) -> List[Dict]:
     ) as csv_file:
         reader = csv.DictReader(csv_file) # use the header row as dictionary keys
         
-        # Convert CSV strings into appropriate numeric types
+        # Convert CSV strings into appropriate numeric types then add each song dictionary to the list
         for row in reader:
             for field in integer_fields:
                 row[field] = int(row[field])
