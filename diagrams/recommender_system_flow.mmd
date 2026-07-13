@@ -1,12 +1,13 @@
 flowchart LR
-    A["UserProfile<br/>favorite_genre<br/>favorite_mood<br/>target_energy<br/>likes_acoustic"]
-    B["V1 scoring features<br/>genre<br/>mood<br/>energy<br/>acousticness"]
-    G["Added analysis features<br/>release_year<br/>duration_seconds<br/>instrumentalness"]
+    A["Optional category preferences<br/>preferred_genres[]<br/>preferred_moods[]<br/>Any = exclude from score"]
+    B["Optional advanced targets<br/>energy · tempo · valence<br/>danceability · acousticness<br/>instrumentalness · year · duration"]
+    C["Song catalog<br/>all matching content features"]
 
-    A --> C["Compare each song<br/>with user preferences"]
-    B --> C
-    G -. "stored for analysis;<br/>not scored in V1" .-> B
+    A --> D["Calculate 0-1 similarities<br/>exact category: 1.0<br/>related family: 0.5<br/>numeric: normalized distance"]
+    B --> D
+    C --> D
 
-    C --> D["Calculate weighted score<br/>Genre: 30%<br/>Mood: 30%<br/>Energy: 25%<br/>Acousticness: 15%"]
-    D --> E["Sort songs<br/>highest score first"]
-    E --> F["Return top recommendations<br/>with explanations"]
+    D --> E["Apply feature weights<br/>Genre 20% · Mood 20% · Energy 12%<br/>Tempo 8% · Valence 8% · Danceability 8%<br/>Acousticness 8% · Instrumentalness 6%<br/>Release year 5% · Duration 5%"]
+    E --> F["Renormalize using<br/>active preferences only"]
+    F --> G["Sort songs<br/>highest score first"]
+    G --> H["Return top recommendations<br/>with score breakdowns"]

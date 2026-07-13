@@ -1,82 +1,101 @@
-<svg xmlns="http://www.w3.org/2000/svg" width="1400" height="460" viewBox="0 0 1400 460" role="img" aria-labelledby="title desc">
-  <title id="title">Music recommender system flow</title>
-  <desc id="desc">User preferences are compared with four V1 scoring features. Release year, duration in seconds, and instrumentalness are stored for analysis but are not scored in V1.</desc>
+<svg xmlns="http://www.w3.org/2000/svg" width="1800" height="620" viewBox="0 0 1800 620" role="img" aria-labelledby="title desc">
+  <title id="title">Expanded content-based music recommender flow</title>
+  <desc id="desc">Optional multi-select categories and numeric targets are compared with song features using exact, related-family, and normalized numeric similarities before weighting and ranking.</desc>
   <defs>
     <marker id="arrow" markerWidth="10" markerHeight="10" refX="8" refY="3" orient="auto" markerUnits="strokeWidth">
       <path d="M0,0 L0,6 L9,3 z" fill="#334155"/>
     </marker>
     <style>
-      .box { fill: #eff6ff; stroke: #2563eb; stroke-width: 2; rx: 12; }
+      .basic { fill: #eff6ff; stroke: #2563eb; stroke-width: 2; rx: 12; }
+      .advanced { fill: #faf5ff; stroke: #9333ea; stroke-width: 2; rx: 12; }
+      .process { fill: #f8fafc; stroke: #475569; stroke-width: 2; rx: 12; }
       .score { fill: #f0fdf4; stroke: #16a34a; stroke-width: 2; rx: 12; }
-      .analysis { fill: #faf5ff; stroke: #9333ea; stroke-width: 2; rx: 12; }
       .result { fill: #fff7ed; stroke: #ea580c; stroke-width: 2; rx: 12; }
       .line { fill: none; stroke: #334155; stroke-width: 2.5; marker-end: url(#arrow); }
-      .dash { fill: none; stroke: #7e22ce; stroke-width: 2; stroke-dasharray: 7 5; marker-end: url(#arrow); }
-      .heading { font: 700 17px Arial, sans-serif; fill: #0f172a; text-anchor: middle; }
-      .body { font: 14px Arial, sans-serif; fill: #334155; text-anchor: middle; }
+      .heading { font: 700 18px Arial, sans-serif; fill: #0f172a; text-anchor: middle; }
+      .body { font: 15px Arial, sans-serif; fill: #334155; text-anchor: middle; }
+      .small { font: 13px Arial, sans-serif; fill: #475569; text-anchor: middle; }
     </style>
   </defs>
 
-  <rect width="1400" height="460" fill="#ffffff"/>
+  <rect width="1800" height="620" fill="#ffffff"/>
 
-  <rect class="box" x="30" y="40" width="220" height="145"/>
-  <text class="heading" x="140" y="70">UserProfile</text>
-  <text class="body" x="140" y="98">
-    <tspan x="140" dy="0">favorite genre</tspan>
-    <tspan x="140" dy="21">favorite mood</tspan>
-    <tspan x="140" dy="21">target energy</tspan>
-    <tspan x="140" dy="21">likes acoustic</tspan>
+  <rect class="basic" x="30" y="25" width="300" height="135"/>
+  <text class="heading" x="180" y="55">Category Preferences</text>
+  <text class="body" x="180" y="83">
+    <tspan x="180" dy="0">preferred_genres[]</tspan>
+    <tspan x="180" dy="22">preferred_moods[]</tspan>
+    <tspan x="180" dy="22">Any = exclude from score</tspan>
   </text>
 
-  <rect class="box" x="30" y="275" width="220" height="125"/>
-  <text class="heading" x="140" y="303">V1 Scoring Features</text>
-  <text class="body" x="140" y="329">
-    <tspan x="140" dy="0">genre</tspan>
-    <tspan x="140" dy="19">mood</tspan>
-    <tspan x="140" dy="19">energy</tspan>
-    <tspan x="140" dy="19">acousticness</tspan>
+  <rect class="advanced" x="30" y="185" width="300" height="230"/>
+  <text class="heading" x="180" y="218">Optional Advanced Targets</text>
+  <text class="body" x="180" y="248">
+    <tspan x="180" dy="0">target_energy</tspan>
+    <tspan x="180" dy="22">target_tempo_bpm</tspan>
+    <tspan x="180" dy="22">target_valence</tspan>
+    <tspan x="180" dy="22">target_danceability</tspan>
+    <tspan x="180" dy="22">target_acousticness</tspan>
+    <tspan x="180" dy="22">target_instrumentalness</tspan>
+    <tspan x="180" dy="22">preferred_release_year</tspan>
+    <tspan x="180" dy="22">preferred_duration_seconds</tspan>
   </text>
 
-  <rect class="analysis" x="335" y="305" width="230" height="135"/>
-  <text class="heading" x="450" y="333">Added Analysis Features</text>
-  <text class="body" x="450" y="359">
-    <tspan x="450" dy="0">release_year</tspan>
-    <tspan x="450" dy="19">duration_seconds</tspan>
-    <tspan x="450" dy="19">instrumentalness</tspan>
-    <tspan x="450" dy="21">stored; not scored in V1</tspan>
+  <rect class="basic" x="30" y="455" width="300" height="110"/>
+  <text class="heading" x="180" y="488">Song Catalog</text>
+  <text class="body" x="180" y="519">
+    <tspan x="180" dy="0">all matching content features</tspan>
+    <tspan x="180" dy="23">from songs.csv</tspan>
   </text>
 
-  <rect class="box" x="335" y="150" width="230" height="105"/>
-  <text class="heading" x="450" y="187">Compare Each Song</text>
-  <text class="body" x="450" y="216">
-    <tspan x="450" dy="0">with user preferences</tspan>
+  <rect class="process" x="410" y="215" width="280" height="180"/>
+  <text class="heading" x="550" y="250">Calculate Similarities</text>
+  <text class="body" x="550" y="282">
+    <tspan x="550" dy="0">exact category: 1.0</tspan>
+    <tspan x="550" dy="24">related family: 0.5</tspan>
+    <tspan x="550" dy="24">unrelated category: 0.0</tspan>
+    <tspan x="550" dy="24">numeric: normalized distance</tspan>
   </text>
 
-  <rect class="score" x="650" y="105" width="250" height="195"/>
-  <text class="heading" x="775" y="138">Calculate Weighted Score</text>
-  <text class="body" x="775" y="170">
-    <tspan x="775" dy="0">Genre: 30%</tspan>
-    <tspan x="775" dy="24">Mood: 30%</tspan>
-    <tspan x="775" dy="24">Energy: 25%</tspan>
-    <tspan x="775" dy="24">Acousticness: 15%</tspan>
+  <rect class="score" x="755" y="85" width="380" height="410"/>
+  <text class="heading" x="945" y="120">Apply Feature Weights</text>
+  <text class="body" x="945" y="155">
+    <tspan x="945" dy="0">Genre: 20%</tspan>
+    <tspan x="945" dy="27">Mood: 20%</tspan>
+    <tspan x="945" dy="27">Energy: 12%</tspan>
+    <tspan x="945" dy="27">Tempo: 8%</tspan>
+    <tspan x="945" dy="27">Valence: 8%</tspan>
+    <tspan x="945" dy="27">Danceability: 8%</tspan>
+    <tspan x="945" dy="27">Acousticness: 8%</tspan>
+    <tspan x="945" dy="27">Instrumentalness: 6%</tspan>
+    <tspan x="945" dy="27">Release year: 5%</tspan>
+    <tspan x="945" dy="27">Duration: 5%</tspan>
+  </text>
+  <text class="small" x="945" y="463">All weights total 100% when active</text>
+
+  <rect class="process" x="1220" y="245" width="230" height="120"/>
+  <text class="heading" x="1335" y="278">Renormalize</text>
+  <text class="body" x="1335" y="308">
+    <tspan x="1335" dy="0">divide by total weight</tspan>
+    <tspan x="1335" dy="23">of active preferences</tspan>
   </text>
 
-  <rect class="box" x="985" y="150" width="175" height="105"/>
-  <text class="heading" x="1072.5" y="187">Sort Songs</text>
-  <text class="body" x="1072.5" y="216">highest score first</text>
+  <rect class="basic" x="1530" y="165" width="230" height="105"/>
+  <text class="heading" x="1645" y="201">Sort Songs</text>
+  <text class="body" x="1645" y="232">highest score first</text>
 
-  <rect class="result" x="1240" y="135" width="145" height="135"/>
-  <text class="heading" x="1312.5" y="170">Return Top</text>
-  <text class="heading" x="1312.5" y="192">Recommendations</text>
-  <text class="body" x="1312.5" y="225">
-    <tspan x="1312.5" dy="0">with clear</tspan>
-    <tspan x="1312.5" dy="21">explanations</tspan>
+  <rect class="result" x="1530" y="350" width="230" height="135"/>
+  <text class="heading" x="1645" y="387">Return Top Results</text>
+  <text class="body" x="1645" y="418">
+    <tspan x="1645" dy="0">recommendations with</tspan>
+    <tspan x="1645" dy="23">score breakdowns</tspan>
   </text>
 
-  <path class="line" d="M250 112 C292 112, 292 180, 335 190"/>
-  <path class="line" d="M250 330 C292 330, 292 232, 335 216"/>
-  <path class="dash" d="M335 378 C300 378, 286 360, 250 350"/>
-  <path class="line" d="M565 202 L650 202"/>
-  <path class="line" d="M900 202 L985 202"/>
-  <path class="line" d="M1160 202 L1240 202"/>
+  <path class="line" d="M330 92 C370 92, 370 240, 410 260"/>
+  <path class="line" d="M330 300 L410 300"/>
+  <path class="line" d="M330 510 C370 510, 370 370, 410 350"/>
+  <path class="line" d="M690 305 L755 305"/>
+  <path class="line" d="M1135 305 L1220 305"/>
+  <path class="line" d="M1450 285 C1490 285, 1490 218, 1530 218"/>
+  <path class="line" d="M1645 270 L1645 350"/>
 </svg>

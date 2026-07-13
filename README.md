@@ -19,27 +19,28 @@ Replace this paragraph with your own summary of what your version does.
 
 This simulator uses **content-based filtering**. It compares each song's descriptive features with one user's stated preferences, calculates a weighted score, sorts the songs from highest to lowest score, and returns the top results with an explanation.
 
-The V1 recommendation score uses four features:
+The expanded recommendation design supports ten preference-bearing features:
 
-- `genre` compared with `favorite_genre`: 30%
-- `mood` compared with `favorite_mood`: 30%
-- `energy` compared with `target_energy`: 25%
-- `acousticness` compared with `likes_acoustic`: 15%
+- `genre` and `mood`: 20% each
+- `energy`: 12%
+- `tempo_bpm`, `valence`, `danceability`, and `acousticness`: 8% each
+- `instrumentalness`: 6%
+- `release_year` and `duration_seconds`: 5% each
 
-The `Song` object also stores `tempo_bpm`, `valence`, `danceability`, `release_year`, `duration_seconds`, and `instrumentalness`. These fields add depth to dataset analysis, but V1 does not score them because `UserProfile` does not yet contain matching preferences. This prevents the recommender from guessing what a user wants.
+`preferred_genres` and `preferred_moods` are optional multi-select controls with an **Any** option. Exact category matches receive full credit, while related labels in an explicit genre or mood family receive partial credit. Numeric targets for the other eight features are optional advanced preferences. Unselected preferences are excluded, the remaining weights are renormalized, and at least one preference must be active. The proposed profile and formulas are documented in [Content-Based Recommender Dataset Analysis](content_based_recommender_dataset_analysis.md).
 
 ### Feature origin
 
 | Source | Features | How they are used |
 |---|---|---|
 | Starter project CSV | `id`, `title`, `artist`, `genre`, `mood`, `energy`, `tempo_bpm`, `valence`, `danceability`, `acousticness` | Identity, display, scoring, and analysis |
-| Added during this project | `release_year`, `duration_seconds`, `instrumentalness` | Deeper analysis and future recommendation experiments |
+| Added during this project | `release_year`, `duration_seconds`, `instrumentalness` | Expanded optional recommendation preferences and deeper analysis |
 
 The three added columns and the 50 added songs contain **synthetic educational values**. Their structure is inspired by common music-catalog and audio-analysis metadata, but the values were not downloaded from or measured by Spotify, YouTube, or another streaming platform.
 
 ### System flow
 
-[![Content-based music recommender system flow](diagrams/recommender_system_flow.svg?v=2)](diagrams/recommender_system_flow.mmd)
+[![Content-based music recommender system flow](diagrams/recommender_system_flow.svg?v=4)](diagrams/recommender_system_flow.mmd)
 
 ---
 
