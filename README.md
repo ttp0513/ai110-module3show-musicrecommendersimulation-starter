@@ -17,15 +17,29 @@ Replace this paragraph with your own summary of what your version does.
 
 ## How The System Works
 
-Real-world recommendation systems compare user preferences and behavior with item information, often combining content-based and collaborative filtering. My version will use a simple content-based approach that prioritizes understandable and explainable matches. It will give the most importance to genre and mood, then compare energy level and acousticness to rank songs with similar qualities.Tempo, valence, and danceability will remain available as song data for future improvements, but the first version will not score them because the current UserProfile does not contain matching preferences.
+This simulator uses **content-based filtering**. It compares each song's descriptive features with one user's stated preferences, calculates a weighted score, sorts the songs from highest to lowest score, and returns the top results with an explanation.
 
-#### Song features used in the system:
-id, title, artist, genre, mood, energy, tempo_bpm, valence, danceability, acousticness
+The V1 recommendation score uses four features:
 
-#### UserProfile preferences used for scoring:
-- favorite_genre, favorite_mood, target_energy,likes_acoustic
+- `genre` compared with `favorite_genre`: 30%
+- `mood` compared with `favorite_mood`: 30%
+- `energy` compared with `target_energy`: 25%
+- `acousticness` compared with `likes_acoustic`: 15%
 
-[![Content-based music recommender system flow](diagrams/recommender_system_flow.svg)](diagrams/recommender_system_flow.mmd)
+The `Song` object also stores `tempo_bpm`, `valence`, `danceability`, `release_year`, `duration_seconds`, and `instrumentalness`. These fields add depth to dataset analysis, but V1 does not score them because `UserProfile` does not yet contain matching preferences. This prevents the recommender from guessing what a user wants.
+
+### Feature origin
+
+| Source | Features | How they are used |
+|---|---|---|
+| Starter project CSV | `id`, `title`, `artist`, `genre`, `mood`, `energy`, `tempo_bpm`, `valence`, `danceability`, `acousticness` | Identity, display, scoring, and analysis |
+| Added during this project | `release_year`, `duration_seconds`, `instrumentalness` | Deeper analysis and future recommendation experiments |
+
+The three added columns and the 50 added songs contain **synthetic educational values**. Their structure is inspired by common music-catalog and audio-analysis metadata, but the values were not downloaded from or measured by Spotify, YouTube, or another streaming platform.
+
+### System flow
+
+[![Content-based music recommender system flow](diagrams/recommender_system_flow.svg?v=2)](diagrams/recommender_system_flow.mmd)
 
 ---
 

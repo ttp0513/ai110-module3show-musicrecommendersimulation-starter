@@ -1,9 +1,11 @@
 flowchart LR
-    A["UserProfile<br/>favorite genre<br/>favorite mood<br/>target energy<br/>likes acoustic"]
-    B["Song Catalog<br/>genre and mood<br/>energy and acousticness"]
+    A["UserProfile<br/>favorite_genre<br/>favorite_mood<br/>target_energy<br/>likes_acoustic"]
+    B["V1 scoring features<br/>genre<br/>mood<br/>energy<br/>acousticness"]
+    G["Added analysis features<br/>release_year<br/>duration_seconds<br/>instrumentalness"]
 
     A --> C["Compare each song<br/>with user preferences"]
     B --> C
+    G -. "stored for analysis;<br/>not scored in V1" .-> B
 
     C --> D["Calculate weighted score<br/>Genre: 30%<br/>Mood: 30%<br/>Energy: 25%<br/>Acousticness: 15%"]
     D --> E["Sort songs<br/>highest score first"]

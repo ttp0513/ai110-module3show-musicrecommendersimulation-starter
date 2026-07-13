@@ -17,6 +17,9 @@ class Song:
     valence: float
     danceability: float
     acousticness: float
+    release_year: int = 0
+    duration_seconds: int = 0
+    instrumentalness: float = 0.0
 
 @dataclass
 class UserProfile:
