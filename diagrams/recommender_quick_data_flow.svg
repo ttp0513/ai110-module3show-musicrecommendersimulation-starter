@@ -1,0 +1,57 @@
+<svg xmlns="http://www.w3.org/2000/svg" width="1500" height="390" viewBox="0 0 1500 390" role="img" aria-labelledby="title desc">
+  <title id="title">Quick music recommender data flow</title>
+  <desc id="desc">User preferences and the song CSV enter a loop that scores each song. The scores are sorted and the top K recommendations are returned.</desc>
+  <defs>
+    <marker id="arrow" markerWidth="10" markerHeight="10" refX="8" refY="3" orient="auto" markerUnits="strokeWidth">
+      <path d="M0,0 L0,6 L9,3 z" fill="#334155"/>
+    </marker>
+    <style>
+      .input { fill: #eff6ff; stroke: #2563eb; stroke-width: 2; rx: 12; }
+      .process { fill: #f0fdf4; stroke: #16a34a; stroke-width: 2; rx: 12; }
+      .rank { fill: #faf5ff; stroke: #9333ea; stroke-width: 2; rx: 12; }
+      .output { fill: #fff7ed; stroke: #ea580c; stroke-width: 2; rx: 12; }
+      .line { fill: none; stroke: #334155; stroke-width: 2.5; marker-end: url(#arrow); }
+      .heading { font: 700 18px Arial, sans-serif; fill: #0f172a; text-anchor: middle; }
+      .body { font: 15px Arial, sans-serif; fill: #334155; text-anchor: middle; }
+    </style>
+  </defs>
+
+  <rect width="1500" height="390" fill="#ffffff"/>
+
+  <rect class="input" x="30" y="45" width="230" height="105"/>
+  <text class="heading" x="145" y="80">INPUT</text>
+  <text class="body" x="145" y="113">User preferences</text>
+
+  <rect class="input" x="30" y="240" width="230" height="105"/>
+  <text class="heading" x="145" y="275">SONG DATA</text>
+  <text class="body" x="145" y="308">Load songs.csv</text>
+
+  <rect class="process" x="355" y="75" width="350" height="240"/>
+  <text class="heading" x="530" y="112">PROCESS: THE LOOP</text>
+  <text class="body" x="530" y="148">
+    <tspan x="530" dy="0">For each individual song:</tspan>
+    <tspan x="530" dy="28">compare active preferences</tspan>
+    <tspan x="530" dy="28">calculate similarities</tspan>
+    <tspan x="530" dy="28">apply and renormalize weights</tspan>
+    <tspan x="530" dy="28">save song + score + reasons</tspan>
+  </text>
+
+  <rect class="rank" x="800" y="115" width="270" height="160"/>
+  <text class="heading" x="935" y="154">RANKING</text>
+  <text class="body" x="935" y="190">
+    <tspan x="935" dy="0">Sort all scored songs</tspan>
+    <tspan x="935" dy="28">highest score first</tspan>
+  </text>
+
+  <rect class="output" x="1165" y="105" width="300" height="180"/>
+  <text class="heading" x="1315" y="145">OUTPUT</text>
+  <text class="body" x="1315" y="183">
+    <tspan x="1315" dy="0">Top K recommendations</tspan>
+    <tspan x="1315" dy="28">with scores and explanations</tspan>
+  </text>
+
+  <path class="line" d="M260 98 C310 98, 310 145, 355 155"/>
+  <path class="line" d="M260 293 C310 293, 310 245, 355 235"/>
+  <path class="line" d="M705 195 L800 195"/>
+  <path class="line" d="M1070 195 L1165 195"/>
+</svg>

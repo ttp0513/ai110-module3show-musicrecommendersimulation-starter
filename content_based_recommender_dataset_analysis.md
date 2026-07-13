@@ -35,11 +35,29 @@ This project added 50 synthetic songs and three fields:
 - `duration_seconds` for track-length preferences
 - `instrumentalness` for vocal-versus-instrumental preferences
 
-The added values are synthetic classroom data inspired by common music-catalog and audio-analysis structures. They are not official measurements from Spotify, YouTube, artists, or recording labels.
+The added values are synthetic classroom data inspired by common music-catalog and audio-analysis structures. They are not official measurements from Spotify, YouTube, artists, or recording labels. During dataset consolidation, only the genre and mood labels in rows 11-60 were normalized; the original 10 starter rows were preserved exactly.
 
 ### Coverage
 
-The catalog contains 57 genre labels and 33 mood labels. It is broad but shallow: lofi appears three times, pop appears twice, and the other 55 genres appear once each. This supports varied demonstrations but limits exact-match choice within most genres.
+The catalog now contains 13 genres and 9 moods. Every genre has 3-7 songs, and every mood has 3-9 songs. This provides enough overlap to compare several candidates for the same preference while retaining meaningful variety.
+
+| Genre | Songs | Genre | Songs |
+|---|---:|---|---:|
+| ambient | 4 | jazz | 6 |
+| classical | 5 | latin | 6 |
+| electronic | 7 | lofi | 3 |
+| folk | 5 | pop | 4 |
+| hip hop | 4 | rock | 7 |
+| indie pop | 3 | synthwave | 3 |
+| world | 3 |  |  |
+
+| Mood | Songs | Mood | Songs |
+|---|---:|---|---:|
+| celebratory | 8 | intense | 9 |
+| chill | 8 | moody | 9 |
+| confident | 5 | relaxed | 6 |
+| focused | 3 | romantic | 6 |
+| happy | 6 |  |  |
 
 Numeric coverage is sufficient for testing contrasting profiles:
 
@@ -94,7 +112,7 @@ category_similarity = max(
 )
 ```
 
-For example, a user who selects both `rock` and `metal` receives the better of the two comparisons for each song. Selecting **Any** removes the category from scoring rather than awarding every song a perfect match.
+For example, a user who selects both `pop` and `indie pop` receives the better of the two comparisons for each song. Selecting **Any** removes the category from scoring rather than awarding every song a perfect match.
 
 Features already stored on a 0-1 scale use absolute distance:
 
@@ -112,35 +130,29 @@ duration_similarity = max(0, 1 - abs(target_duration - song_duration) / 449)
 
 All text values should be trimmed and converted to lowercase before categorical comparison.
 
-## Category Relationship Maps
+## Limited Category Relationships
 
-Exact-only matching is too brittle for a catalog with 57 genre labels. The first implementation should use explicit, reviewable category families. Two different labels in the same family receive 0.5 similarity.
+Consolidation makes exact matching practical, so the system no longer needs broad genre and mood families. A small set of obvious relationships may still receive 0.5 similarity to improve discovery without making strong cultural assumptions.
 
-### Genre families
+### Related genre pairs
 
-| Family | Related labels |
+| Genre | Related genre |
 |---|---|
-| Pop | pop, indie pop, electropop, folk pop, K-pop, J-pop |
-| Rock | rock, southern rock, alternative, grunge, post-punk, punk, metal |
-| Electronic | EDM, house, techno, trance, dubstep, drum and bass, synthwave, darkwave, downtempo, chiptune |
-| Hip-hop and R&B | hip hop, trap, R&B |
-| Jazz and soul | jazz, bebop, blues, soul, funk, gospel |
-| Folk and country | folk, americana, country, bluegrass, Scandinavian folk |
-| Latin and global | Latin, salsa, samba, bossa nova, flamenco, reggaeton, Afrobeat, world, reggae |
-| Classical and atmospheric | classical, orchestral, opera, choral, cinematic, ambient, new age, meditation |
+| pop | indie pop |
+| lofi | ambient |
+| electronic | synthwave |
+| latin | world |
 
-### Mood families
+### Related mood pairs
 
-| Family | Related labels |
+| Mood | Related mood |
 |---|---|
-| Positive | happy, hopeful, uplifting, celebratory, playful, euphoric, triumphant |
-| Calm | chill, relaxed, peaceful, serene, focused, contemplative, dreamy |
-| Intense | intense, energetic, aggressive, angry, rebellious, confident, passionate |
-| Dark and reflective | moody, melancholic, dark, mysterious, dramatic, nostalgic |
-| Expressive | soulful, spiritual, romantic |
-| Exploratory | adventurous, whimsical |
+| happy | celebratory |
+| chill | relaxed |
+| chill | focused |
+| intense | confident |
 
-These families are application rules, not universal facts about music. They should be stored as named constants, tested, and revised when the catalog changes. A genre may belong to more than one family in a later version, but one family per label keeps the initial implementation simple.
+These pairs are application rules, not universal facts about music. They should be stored as named constants, tested, and easy to disable. Labels not listed as a pair receive no partial category credit.
 
 ## Weighted Score
 
@@ -196,16 +208,19 @@ An explanation should identify the strongest real matches and avoid claiming tha
 
 > Recommended because it matches your pop and happy preferences, its 0.82 energy is close to your 0.80 target, and its 211-second duration is near your preferred 210 seconds.
 
-## Risks and Mitigations
+## Expected Biases and Risks
 
-| Risk | Impact | Mitigation |
+The recommender is deterministic, but its results are not neutral. They reflect the catalog, consolidated labels, limited category relationships, and weights selected by the developer.
+
+| Bias or risk | Expected impact | Mitigation |
 |---|---|---|
-| Shallow genre coverage | Most genres have only one exact match | Add more songs per genre and support related-genre partial matches |
+| Genre and mood weighting | Their combined 40% may hide songs with excellent audio-feature matches but different labels | Compare rankings with reduced category weights and show score breakdowns |
+| Representation bias | Genre counts range from 3-7 and mood counts from 3-9, so some preferences still have more candidates | Evaluate results by category and add examples to smaller groups when needed |
 | Correlated features | Mood/valence or energy/tempo may be counted twice | Keep individual weights modest and inspect score breakdowns |
 | Overspecialization | Results may become too similar | Rerank the final list for genre and artist diversity |
 | Missing preferences | Unanswered controls could be treated as minimum values | Store missing values as `None` and renormalize active weights |
-| Synthetic data | Results may appear more realistic than the evidence supports | Label the dataset clearly and avoid claims about real user behavior |
-| Category-family assumptions | Relatedness rules may oversimplify genre and mood | Keep mappings explicit, test them, and document changes |
+| Synthetic-data bias | Hand-assigned audio values may reinforce expected stereotypes, such as assuming all lofi is calm | Label the data clearly and test for unexpected feature/category patterns |
+| Related-category assumptions | Even a small set of hand-written pairs may oversimplify musical relationships | Keep pairs explicit, optional, tested, and documented |
 
 ## Evaluation Plan
 
@@ -235,4 +250,4 @@ For each profile, record the top results, score breakdowns, unexpected rankings,
 
 ## Decision Summary
 
-The final design uses all meaningful content features while keeping the user experience manageable. Multi-select genre and mood preferences establish intent without requiring one exact label. Explicit category families give related songs partial credit. Audio attributes refine musical character, while year and duration provide contextual tie-breaking. Optional controls, normalized similarities, and active-weight renormalization make the design explainable, testable, and appropriate for the current 60-song simulator.
+The final design uses all meaningful content features while keeping the user experience manageable. The consolidated 13-genre and 9-mood vocabulary provides several exact-match candidates per category. Multi-select preferences establish intent, while a limited set of optional related-category pairs supports discovery. Audio attributes refine musical character, and year and duration provide contextual tie-breaking. Optional controls, normalized similarities, and active-weight renormalization make the design explainable and testable for the current 60-song simulator.

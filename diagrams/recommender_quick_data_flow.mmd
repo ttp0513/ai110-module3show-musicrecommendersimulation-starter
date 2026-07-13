@@ -1,0 +1,11 @@
+flowchart LR
+    A["INPUT<br/>User preferences"]
+    B["SONG DATA<br/>Load songs.csv"]
+    C["PROCESS: THE LOOP<br/>For each song:<br/>compare active preferences<br/>calculate similarities<br/>apply and renormalize weights<br/>save song + score + reasons"]
+    D["RANKING<br/>Sort all scored songs<br/>highest score first"]
+    E["OUTPUT<br/>Top K recommendations<br/>with explanations"]
+
+    A --> C
+    B --> C
+    C --> D
+    D --> E

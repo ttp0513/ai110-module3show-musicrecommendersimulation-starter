@@ -1,6 +1,6 @@
 <svg xmlns="http://www.w3.org/2000/svg" width="1800" height="620" viewBox="0 0 1800 620" role="img" aria-labelledby="title desc">
   <title id="title">Expanded content-based music recommender flow</title>
-  <desc id="desc">Optional multi-select categories and numeric targets are compared with song features using exact, related-family, and normalized numeric similarities before weighting and ranking.</desc>
+  <desc id="desc">Optional multi-select categories and numeric targets are compared with song features using exact, approved related-pair, and normalized numeric similarities before weighting and ranking.</desc>
   <defs>
     <marker id="arrow" markerWidth="10" markerHeight="10" refX="8" refY="3" orient="auto" markerUnits="strokeWidth">
       <path d="M0,0 L0,6 L9,3 z" fill="#334155"/>
@@ -52,7 +52,7 @@
   <text class="heading" x="550" y="250">Calculate Similarities</text>
   <text class="body" x="550" y="282">
     <tspan x="550" dy="0">exact category: 1.0</tspan>
-    <tspan x="550" dy="24">related family: 0.5</tspan>
+    <tspan x="550" dy="24">approved related pair: 0.5</tspan>
     <tspan x="550" dy="24">unrelated category: 0.0</tspan>
     <tspan x="550" dy="24">numeric: normalized distance</tspan>
   </text>

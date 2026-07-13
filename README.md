@@ -36,9 +36,19 @@ The expanded recommendation design supports ten preference-bearing features:
 | Starter project CSV | `id`, `title`, `artist`, `genre`, `mood`, `energy`, `tempo_bpm`, `valence`, `danceability`, `acousticness` | Identity, display, scoring, and analysis |
 | Added during this project | `release_year`, `duration_seconds`, `instrumentalness` | Expanded optional recommendation preferences and deeper analysis |
 
-The three added columns and the 50 added songs contain **synthetic educational values**. Their structure is inspired by common music-catalog and audio-analysis metadata, but the values were not downloaded from or measured by Spotify, YouTube, or another streaming platform.
+The three added columns and the 50 added songs contain synthetic values. Their structure is inspired by common music-catalog and audio-analysis metadata, but the values were not downloaded from or measured by Spotify, YouTube, or another streaming platform. The added rows were consolidated into a shared vocabulary, producing 13 genres and 9 moods with multiple songs per category; the original 10 starter rows were not changed.
+
+### Expected biases
+
+This system may over-prioritize genre and mood because they receive 40% of the full score, causing it to miss strong songs that match the user's audio preferences but use different labels. Category counts still vary, and even the limited hand-written related-category pairs reflect developer assumptions about musical similarity. Score explanations and testing across different profiles should be used to identify these effects.
 
 ### System flow
+
+#### Quick data flow
+
+[![Quick music recommender data flow](diagrams/recommender_quick_data_flow.svg)](diagrams/recommender_quick_data_flow.mmd)
+
+#### Detailed scoring design
 
 [![Content-based music recommender system flow](diagrams/recommender_system_flow.svg?v=4)](diagrams/recommender_system_flow.mmd)
 
@@ -83,7 +93,6 @@ You can add more tests in `tests/test_recommender.py`.
 
 Paste a sample of your recommender's output here as a text block so a reader can see what it produces:
 
-```
 # e.g.:
 # User profile: genre=indie, mood=chill, energy=low
 # Recommendations:
