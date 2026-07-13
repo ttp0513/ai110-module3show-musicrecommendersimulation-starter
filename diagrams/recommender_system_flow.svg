@@ -1,0 +1,68 @@
+<svg xmlns="http://www.w3.org/2000/svg" width="1400" height="460" viewBox="0 0 1400 460" role="img" aria-labelledby="title desc">
+  <title id="title">Music recommender system flow</title>
+  <desc id="desc">A user profile and song catalog are compared, scored, sorted, and returned as explained recommendations.</desc>
+  <defs>
+    <marker id="arrow" markerWidth="10" markerHeight="10" refX="8" refY="3" orient="auto" markerUnits="strokeWidth">
+      <path d="M0,0 L0,6 L9,3 z" fill="#334155"/>
+    </marker>
+    <style>
+      .box { fill: #eff6ff; stroke: #2563eb; stroke-width: 2; rx: 12; }
+      .score { fill: #f0fdf4; stroke: #16a34a; stroke-width: 2; rx: 12; }
+      .result { fill: #fff7ed; stroke: #ea580c; stroke-width: 2; rx: 12; }
+      .line { fill: none; stroke: #334155; stroke-width: 2.5; marker-end: url(#arrow); }
+      .heading { font: 700 17px Arial, sans-serif; fill: #0f172a; text-anchor: middle; }
+      .body { font: 14px Arial, sans-serif; fill: #334155; text-anchor: middle; }
+    </style>
+  </defs>
+
+  <rect width="1400" height="460" fill="#ffffff"/>
+
+  <rect class="box" x="30" y="40" width="220" height="145"/>
+  <text class="heading" x="140" y="70">UserProfile</text>
+  <text class="body" x="140" y="98">
+    <tspan x="140" dy="0">favorite genre</tspan>
+    <tspan x="140" dy="21">favorite mood</tspan>
+    <tspan x="140" dy="21">target energy</tspan>
+    <tspan x="140" dy="21">likes acoustic</tspan>
+  </text>
+
+  <rect class="box" x="30" y="275" width="220" height="110"/>
+  <text class="heading" x="140" y="305">Song Catalog</text>
+  <text class="body" x="140" y="333">
+    <tspan x="140" dy="0">genre and mood</tspan>
+    <tspan x="140" dy="21">energy and acousticness</tspan>
+  </text>
+
+  <rect class="box" x="335" y="150" width="230" height="105"/>
+  <text class="heading" x="450" y="187">Compare Each Song</text>
+  <text class="body" x="450" y="216">
+    <tspan x="450" dy="0">with user preferences</tspan>
+  </text>
+
+  <rect class="score" x="650" y="105" width="250" height="195"/>
+  <text class="heading" x="775" y="138">Calculate Weighted Score</text>
+  <text class="body" x="775" y="170">
+    <tspan x="775" dy="0">Genre: 30%</tspan>
+    <tspan x="775" dy="24">Mood: 30%</tspan>
+    <tspan x="775" dy="24">Energy: 25%</tspan>
+    <tspan x="775" dy="24">Acousticness: 15%</tspan>
+  </text>
+
+  <rect class="box" x="985" y="150" width="175" height="105"/>
+  <text class="heading" x="1072.5" y="187">Sort Songs</text>
+  <text class="body" x="1072.5" y="216">highest score first</text>
+
+  <rect class="result" x="1240" y="135" width="145" height="135"/>
+  <text class="heading" x="1312.5" y="170">Return Top</text>
+  <text class="heading" x="1312.5" y="192">Recommendations</text>
+  <text class="body" x="1312.5" y="225">
+    <tspan x="1312.5" dy="0">with clear</tspan>
+    <tspan x="1312.5" dy="21">explanations</tspan>
+  </text>
+
+  <path class="line" d="M250 112 C292 112, 292 180, 335 190"/>
+  <path class="line" d="M250 330 C292 330, 292 232, 335 216"/>
+  <path class="line" d="M565 202 L650 202"/>
+  <path class="line" d="M900 202 L985 202"/>
+  <path class="line" d="M1160 202 L1240 202"/>
+</svg>

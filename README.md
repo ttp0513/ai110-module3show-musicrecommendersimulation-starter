@@ -17,17 +17,15 @@ Replace this paragraph with your own summary of what your version does.
 
 ## How The System Works
 
-Explain your design in plain language.
+Real-world recommendation systems compare user preferences and behavior with item information, often combining content-based and collaborative filtering. My version will use a simple content-based approach that prioritizes understandable and explainable matches. It will give the most importance to genre and mood, then compare energy level and acousticness to rank songs with similar qualities.Tempo, valence, and danceability will remain available as song data for future improvements, but the first version will not score them because the current UserProfile does not contain matching preferences.
 
-Some prompts to answer:
+#### Song features used in the system:
+id, title, artist, genre, mood, energy, tempo_bpm, valence, danceability, acousticness
 
-- What features does each `Song` use in your system
-  - For example: genre, mood, energy, tempo
-- What information does your `UserProfile` store
-- How does your `Recommender` compute a score for each song
-- How do you choose which songs to recommend
+#### UserProfile preferences used for scoring:
+- favorite_genre, favorite_mood, target_energy,likes_acoustic
 
-You can include a simple diagram or bullet list if helpful.
+[![Content-based music recommender system flow](diagrams/recommender_system_flow.svg)](diagrams/recommender_system_flow.mmd)
 
 ---
 

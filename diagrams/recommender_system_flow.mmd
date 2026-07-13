@@ -1,0 +1,10 @@
+flowchart LR
+    A["UserProfile<br/>favorite genre<br/>favorite mood<br/>target energy<br/>likes acoustic"]
+    B["Song Catalog<br/>genre and mood<br/>energy and acousticness"]
+
+    A --> C["Compare each song<br/>with user preferences"]
+    B --> C
+
+    C --> D["Calculate weighted score<br/>Genre: 30%<br/>Mood: 30%<br/>Energy: 25%<br/>Acousticness: 15%"]
+    D --> E["Sort songs<br/>highest score first"]
+    E --> F["Return top recommendations<br/>with explanations"]
