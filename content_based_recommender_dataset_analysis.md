@@ -130,9 +130,9 @@ duration_similarity = max(0, 1 - abs(target_duration - song_duration) / 449)
 
 All text values should be trimmed and converted to lowercase before categorical comparison.
 
-## Limited Category Relationships
+## Developer-Defined Category Relationships
 
-Consolidation makes exact matching practical, so the system no longer needs broad genre and mood families. A small set of obvious relationships may still receive 0.5 similarity to improve discovery without making strong cultural assumptions.
+Dataset consolidation makes exact matching practical, so the system does not require broad genre and mood families. A small set of developer-defined relationships may receive 0.5 similarity as an optional discovery heuristic. These relationships are design assumptions rather than objective facts or patterns learned by AI.
 
 ### Related genre pairs
 
@@ -152,7 +152,13 @@ Consolidation makes exact matching practical, so the system no longer needs broa
 | chill | focused |
 | intense | confident |
 
-These pairs are application rules, not universal facts about music. They should be stored as named constants, tested, and easy to disable. Labels not listed as a pair receive no partial category credit.
+These pairs are application rules, not universal facts about music. A fixed value of 0.5 also assumes that every listed pair is equally related in every listening context. In practice, musical similarity can vary by individual song, listener, culture, activity, and time. The pairs should therefore be stored as named constants, documented, tested independently, and easy to disable. Labels not listed as a pair receive no partial category credit.
+
+### Preferred alternative for this simulator
+
+The recommended baseline is exact genre and mood matching combined with numeric audio-feature similarity. Energy, tempo, valence, danceability, acousticness, and instrumentalness can identify compatible songs across category boundaries without declaring their genres or moods related. Related-category credit can then be evaluated as an optional experiment rather than treated as required logic.
+
+A data-rich production system could learn category or song relationships from representative playlist co-occurrence and user behavior such as plays, skips, likes, and replays. This simulator does not contain that behavioral evidence, so it should not present its relationships as learned recommendations.
 
 ## Weighted Score
 
@@ -220,7 +226,7 @@ The recommender is deterministic, but its results are not neutral. They reflect 
 | Overspecialization | Results may become too similar | Rerank the final list for genre and artist diversity |
 | Missing preferences | Unanswered controls could be treated as minimum values | Store missing values as `None` and renormalize active weights |
 | Synthetic-data bias | Hand-assigned audio values may reinforce expected stereotypes, such as assuming all lofi is calm | Label the data clearly and test for unexpected feature/category patterns |
-| Related-category assumptions | Even a small set of hand-written pairs may oversimplify musical relationships | Keep pairs explicit, optional, tested, and documented |
+| Related-category assumptions | Hand-written pairs and a fixed 0.5 similarity may oversimplify relationships that vary by listener and context | Use exact category plus numeric similarity as the baseline; keep related pairs explicit, optional, tested, documented, and easy to disable |
 
 ## Evaluation Plan
 

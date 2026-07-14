@@ -27,7 +27,7 @@ The expanded recommendation design supports ten preference-bearing features:
 - `instrumentalness`: 6%
 - `release_year` and `duration_seconds`: 5% each
 
-`preferred_genres` and `preferred_moods` are optional multi-select controls with an **Any** option. Exact category matches receive full credit, while related labels in an explicit genre or mood family receive partial credit. Numeric targets for the other eight features are optional advanced preferences. Unselected preferences are excluded, the remaining weights are renormalized, and at least one preference must be active. The proposed profile and formulas are documented in [Content-Based Recommender Dataset Analysis](content_based_recommender_dataset_analysis.md).
+`preferred_genres` and `preferred_moods` are optional multi-select controls with an **Any** option. Exact category matches receive full credit, while a limited set of developer-defined related labels may receive partial credit. Numeric targets for the other eight features are optional advanced preferences. Unselected preferences are excluded, the remaining weights are renormalized, and at least one preference must be active. The proposed profile and formulas are documented in [Content-Based Recommender Dataset Analysis](content_based_recommender_dataset_analysis.md).
 
 ### Feature origin
 
@@ -40,7 +40,9 @@ The three added columns and the 50 added songs contain synthetic values. Their s
 
 ### Expected biases
 
-This system may over-prioritize genre and mood because they receive 40% of the full score, causing it to miss strong songs that match the user's audio preferences but use different labels. Category counts still vary, and even the limited hand-written related-category pairs reflect developer assumptions about musical similarity. Score explanations and testing across different profiles should be used to identify these effects.
+This system may over-prioritize genre and mood because they receive 40% of the full score, causing it to miss strong songs that match the user's audio preferences but use different labels. Category counts also vary across the catalog. The limited related-category pairs are hand-written heuristics based on developer judgment; they are not relationships learned by AI or inferred from listening behavior. Musical relationships can vary by song, listener, culture, and listening context, so these rules may oversimplify compatibility.
+
+For this simulator, the preferred baseline is exact genre and mood matching combined with numeric audio-feature similarity. This allows compatible songs to surface across category boundaries without requiring a subjective relationship rule. Related-category credit should remain optional, explicit, testable, and easy to disable. A production platform could instead learn relationships from sufficiently representative playlist, play, skip, like, and replay data.
 
 ### System flow
 
@@ -117,15 +119,14 @@ Use this section to document the experiments you ran. For example:
 
 ## Limitations and Risks
 
-Summarize some limitations of your recommender.
+- The catalog contains only 60 songs, and most added metadata values are synthetic rather than platform measurements.
+- The system has no behavioral feedback such as plays, skips, likes, replays, or playlist co-occurrence, so it cannot learn preferences automatically.
+- Related genre and mood pairs reflect developer assumptions and may not represent every listener or cultural context.
+- Static feature weights may overemphasize genre and mood or count correlated signals, such as energy and tempo, more than once.
+- The model does not analyze lyrics, language, artist similarity, popularity, recency trends, or changes in a listener's taste over time.
+- A small or uneven catalog limits recommendation diversity and may provide more choices for some categories than others.
 
-Examples:
-
-- It only works on a tiny catalog
-- It does not understand lyrics or language
-- It might over favor one genre or mood
-
-You will go deeper on this in your model card.
+These limitations are partially mitigated through visible score explanations, optional preferences, active-weight renormalization, category-level evaluation, and the ability to disable related-category rules. Additional technical detail appears in the [Content-Based Recommender Dataset Analysis](content_based_recommender_dataset_analysis.md) and `model_card.md`.
 
 ---
 

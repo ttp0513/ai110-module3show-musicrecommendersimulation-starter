@@ -1,0 +1,51 @@
+flowchart TD
+    A([Start score_song]) --> B["Receive two dictionaries<br/>user_prefs + one song"]
+    B --> C["Create empty list<br/>similarities = []"]
+
+    C --> D{"Genre preference<br/>selected?"}
+    D -- No --> H
+    D -- Yes --> E{"Compare song genre with<br/>all preferred genres"}
+    E -- Exact match --> F1["Genre similarity = 1.0"]
+    E -- Related pair --> F2["Genre similarity = 0.5"]
+    E -- No match --> F3["Genre similarity = 0.0"]
+    F1 --> G["Append tuple<br/>(genre, similarity, explanation)"]
+    F2 --> G
+    F3 --> G
+
+    G --> H{"Mood preference<br/>selected?"}
+    H -- No --> K
+    H -- Yes --> I{"Compare song mood with<br/>all preferred moods"}
+    I -- Exact match --> J1["Mood similarity = 1.0"]
+    I -- Related pair --> J2["Mood similarity = 0.5"]
+    I -- No match --> J3["Mood similarity = 0.0"]
+    J1 --> J["Append tuple<br/>(mood, similarity, explanation)"]
+    J2 --> J
+    J3 --> J
+
+    J --> K["Check each numeric feature<br/>energy, tempo, valence, danceability,<br/>acousticness, instrumentalness,<br/>release year, and duration"]
+    K --> L{"Does this feature have<br/>a user target?"}
+    L -- No --> M{"More numeric<br/>features?"}
+    L -- Yes --> N["Calculate distance<br/>abs(target - song value)"]
+    N --> O["Convert distance to similarity<br/>max(0, 1 - distance / feature range)"]
+    O --> P["Append tuple<br/>(feature, similarity, explanation)"]
+    P --> M
+    M -- Yes --> L
+
+    M -- No --> Q{"Is similarities<br/>empty?"}
+    Q -- Yes --> R["Return<br/>(0.0, no-active-preferences reason)"]
+    Q -- No --> S["Add weights of active features<br/>active_weight"]
+    S --> T["Add weight x similarity<br/>for every active feature<br/>weighted_total"]
+    T --> U["Normalize score<br/>final_score = weighted_total / active_weight"]
+    U --> V["Build one readable reason<br/>for every similarity tuple"]
+    V --> W["Return<br/>(final_score, reasons)"]
+    W --> X([End for this song])
+
+    classDef input fill:#dbeafe,stroke:#2563eb,color:#111827;
+    classDef category fill:#fef3c7,stroke:#d97706,color:#111827;
+    classDef numeric fill:#dcfce7,stroke:#16a34a,color:#111827;
+    classDef result fill:#f3e8ff,stroke:#9333ea,color:#111827;
+
+    class A,B,C input;
+    class D,E,F1,F2,F3,G,H,I,J1,J2,J3,J category;
+    class K,L,M,N,O,P numeric;
+    class Q,R,S,T,U,V,W,X result;
