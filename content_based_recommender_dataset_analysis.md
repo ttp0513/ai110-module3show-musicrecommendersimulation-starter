@@ -2,13 +2,13 @@
 
 ## Executive Summary
 
-This project uses content-based filtering to rank songs by how closely their attributes match a user's stated preferences. The catalog contains 60 songs and 13 fields. Ten fields can influence recommendation quality; `id`, `title`, and `artist` support identity, display, explanations, and diversity.
+This project uses content-based filtering to rank songs by how closely their attributes match a user's stated preferences. The catalog contains 60 songs and 15 fields. Twelve fields can influence recommendation quality; `id`, `title`, and `artist` support identity, display, explanations, and diversity.
 
 The design prioritizes clear user intent while still using the expanded dataset:
 
 - Genre and mood define the listener's high-level goal when selected.
-- Six audio features refine how the music should sound and feel.
-- Release year and duration provide lightweight contextual refinement.
+- Seven audio features refine how the music should sound, feel, and whether it resembles a live recording.
+- Release year, duration, and popularity provide lightweight contextual refinement.
 - Optional preferences are excluded from scoring rather than treated as zero.
 - Every recommendation should include a score breakdown that a user can understand.
 
@@ -20,8 +20,8 @@ The catalog is stored in `data/songs.csv`.
 |---|---|---|
 | Identity and display | `id`, `title`, `artist` | Identify songs, display results, and support artist diversity |
 | Categorical content | `genre`, `mood` | Represent high-level musical style and listening intent |
-| Audio content | `energy`, `tempo_bpm`, `valence`, `danceability`, `acousticness`, `instrumentalness` | Describe measurable aspects of how a song sounds |
-| Context | `release_year`, `duration_seconds` | Represent era and track length |
+| Audio content | `energy`, `tempo_bpm`, `valence`, `danceability`, `acousticness`, `instrumentalness`, `liveness` | Describe aspects of how a song sounds and its recording environment |
+| Context | `release_year`, `duration_seconds`, `popularity` | Represent era, track length, and a simulated mainstream-versus-discovery signal |
 
 ### Data provenance
 
@@ -29,13 +29,17 @@ The starter dataset supplied the first 10 songs and these fields:
 
 `id`, `title`, `artist`, `genre`, `mood`, `energy`, `tempo_bpm`, `valence`, `danceability`, and `acousticness`.
 
-This project added 50 synthetic songs and three fields:
+This project added 50 synthetic songs and five fields:
 
-- `release_year` for era preferences
+- `release_year` for era preferences and derived decade groupings
 - `duration_seconds` for track-length preferences
 - `instrumentalness` for vocal-versus-instrumental preferences
+- `popularity` for optional mainstream-versus-discovery preferences
+- `liveness` for optional studio-versus-live-performance preferences
 
-The added values are synthetic classroom data inspired by common music-catalog and audio-analysis structures. They are not official measurements from Spotify, YouTube, artists, or recording labels. During dataset consolidation, only the genre and mood labels in rows 11-60 were normalized; the original 10 starter rows were preserved exactly.
+The added values are synthetic classroom data inspired by common music-catalog and audio-analysis structures. They are not official measurements from Spotify, YouTube, artists, or recording labels. Popularity does not represent real stream counts or chart performance, and liveness was not produced by an audio-analysis model. During dataset consolidation, only the genre and mood labels in rows 11-60 were normalized. Adding popularity and liveness appended new values without changing the 13 fields already stored for any song, including the original 10 starter rows.
+
+Release decade is derived from `release_year` rather than stored or scored separately. This avoids counting the same era preference twice while retaining the more precise year value.
 
 ### Coverage
 
@@ -69,12 +73,14 @@ Numeric coverage is sufficient for testing contrasting profiles:
 | Danceability | 0.08-0.97 |
 | Acousticness | 0.01-0.99 |
 | Instrumentalness | 0.01-1.00 |
+| Liveness | 0.04-0.83 |
+| Popularity | 29-90 |
 | Release year | 2010-2024 |
 | Duration | 154-603 seconds |
 
 ## UserProfile Design
 
-The application should use progressive disclosure. Genre and mood remain visible as multi-select controls with an **Any** option. Detailed numeric targets belong under an optional **Advanced preferences** section so a new user is not forced to configure ten controls.
+The application should use progressive disclosure. Genre and mood remain visible as multi-select controls with an **Any** option. Detailed numeric targets belong under an optional **Advanced preferences** section so a new user is not forced to configure twelve controls.
 
 | UserProfile field | UI control | Compared with | Status |
 |---|---|---|---|
@@ -86,8 +92,10 @@ The application should use progressive disclosure. Genre and mood remain visible
 | `target_danceability` | 0-1 slider | `danceability` | Optional |
 | `target_acousticness` | 0-1 slider | `acousticness` | Optional |
 | `target_instrumentalness` | 0-1 slider | `instrumentalness` | Optional |
+| `target_liveness` | 0-1 studio-to-live slider | `liveness` | Optional |
 | `preferred_release_year` | 2010-2024 slider | `release_year` | Optional |
 | `preferred_duration_seconds` | 154-603 second slider | `duration_seconds` | Optional |
+| `target_popularity` | 0-100 discovery-to-mainstream slider | `popularity` | Optional |
 
 `target_acousticness` replaces the earlier `likes_acoustic` Boolean. A continuous value can represent electronic, mixed, neutral, and strongly acoustic preferences instead of forcing a yes-or-no choice.
 
@@ -120,12 +128,13 @@ Features already stored on a 0-1 scale use absolute distance:
 numeric_similarity = 1 - abs(preference - song_value)
 ```
 
-Tempo, year, and duration use the observed catalog range so their larger units cannot dominate:
+Tempo, year, duration, and popularity use a normalizing range so their larger units cannot dominate:
 
 ```text
 tempo_similarity = max(0, 1 - abs(target_tempo - song_tempo) / 142)
 year_similarity = max(0, 1 - abs(target_year - song_year) / 14)
 duration_similarity = max(0, 1 - abs(target_duration - song_duration) / 449)
+popularity_similarity = max(0, 1 - abs(target_popularity - song_popularity) / 100)
 ```
 
 All text values should be trimmed and converted to lowercase before categorical comparison.
@@ -156,7 +165,7 @@ These pairs are application rules, not universal facts about music. A fixed valu
 
 ### Preferred alternative for this simulator
 
-The recommended baseline is exact genre and mood matching combined with numeric audio-feature similarity. Energy, tempo, valence, danceability, acousticness, and instrumentalness can identify compatible songs across category boundaries without declaring their genres or moods related. Related-category credit can then be evaluated as an optional experiment rather than treated as required logic.
+The recommended baseline is exact genre and mood matching combined with numeric audio-feature similarity. Energy, tempo, valence, danceability, acousticness, instrumentalness, and liveness can identify compatible songs across category boundaries without declaring their genres or moods related. Related-category credit can then be evaluated as an optional experiment rather than treated as required logic.
 
 A data-rich production system could learn category or song relationships from representative playlist co-occurrence and user behavior such as plays, skips, likes, and replays. This simulator does not contain that behavioral evidence, so it should not present its relationships as learned recommendations.
 
@@ -166,16 +175,18 @@ When every preference is active, the weights total 100%.
 
 | Feature | Weight | Design role |
 |---|---:|---|
-| Genre | 20% | Primary style preference |
-| Mood | 20% | Primary listening intent |
-| Energy | 12% | Broad activity and intensity signal |
-| Tempo | 8% | Pace refinement |
-| Valence | 8% | Emotional-tone refinement |
-| Danceability | 8% | Movement and activity refinement |
-| Acousticness | 8% | Production-style refinement |
+| Genre | 18% | Primary style preference |
+| Mood | 18% | Primary listening intent |
+| Energy | 11% | Broad activity and intensity signal |
+| Tempo | 7% | Pace refinement |
+| Valence | 7% | Emotional-tone refinement |
+| Danceability | 7% | Movement and activity refinement |
+| Acousticness | 7% | Production-style refinement |
 | Instrumentalness | 6% | Vocal-versus-instrumental refinement |
+| Liveness | 5% | Studio-versus-live recording refinement |
 | Release year | 5% | Era preference and tie-breaker |
-| Duration | 5% | Listening-context preference and tie-breaker |
+| Duration | 4% | Listening-context preference and tie-breaker |
+| Popularity | 5% | Mainstream-versus-discovery refinement |
 
 Only active preferences contribute:
 
@@ -191,10 +202,11 @@ Renormalization keeps the result between 0 and 1 and makes partial profiles comp
 
 ### Why these weights make sense
 
-- Genre and mood receive 40% together because they communicate the user's clearest intent.
+- Genre and mood receive 36% together because they communicate the user's clearest intent without overwhelming cross-category audio similarity.
 - Audio features receive 50% together, adding detail without letting one correlated measurement dominate.
-- Year and duration receive 10% together because they should refine recommendations, not override musical compatibility.
+- Year, duration, and popularity receive 14% together because contextual signals should refine recommendations, not override musical compatibility.
 - Energy receives the largest numeric weight because it is meaningful across studying, relaxing, exercising, and social listening.
+- Popularity receives only 5% because exposure is not the same as quality or personal relevance.
 
 These are transparent starting assumptions, not learned weights. Evaluation should determine whether they behave as intended.
 
@@ -220,12 +232,14 @@ The recommender is deterministic, but its results are not neutral. They reflect 
 
 | Bias or risk | Expected impact | Mitigation |
 |---|---|---|
-| Genre and mood weighting | Their combined 40% may hide songs with excellent audio-feature matches but different labels | Compare rankings with reduced category weights and show score breakdowns |
+| Genre and mood weighting | Their combined 36% may hide songs with excellent audio-feature matches but different labels | Compare rankings with reduced category weights and show score breakdowns |
 | Representation bias | Genre counts range from 3-7 and mood counts from 3-9, so some preferences still have more candidates | Evaluate results by category and add examples to smaller groups when needed |
 | Correlated features | Mood/valence or energy/tempo may be counted twice | Keep individual weights modest and inspect score breakdowns |
 | Overspecialization | Results may become too similar | Rerank the final list for genre and artist diversity |
 | Missing preferences | Unanswered controls could be treated as minimum values | Store missing values as `None` and renormalize active weights |
 | Synthetic-data bias | Hand-assigned audio values may reinforce expected stereotypes, such as assuming all lofi is calm | Label the data clearly and test for unexpected feature/category patterns |
+| Popularity feedback loop | Favoring already popular songs can reduce discovery and repeatedly expose the same items | Keep popularity optional and low-weighted; compare results with the feature disabled |
+| Synthetic liveness | Hand-assigned values may confuse energetic studio tracks with genuinely live recordings | Treat liveness as an estimate, inspect edge cases, and avoid claims of measured audio confidence |
 | Related-category assumptions | Hand-written pairs and a fixed 0.5 similarity may oversimplify relationships that vary by listener and context | Use exact category plus numeric similarity as the baseline; keep related pairs explicit, optional, tested, documented, and easy to disable |
 
 ## Evaluation Plan
@@ -240,13 +254,15 @@ Recommended profiles include:
 4. Acoustic peaceful music with a longer preferred duration.
 5. A partial profile containing only multiple genres and moods to verify best-match scoring and weight renormalization.
 6. An **Any genre** profile to verify that genre is excluded instead of treated as a perfect match.
+7. A high-popularity, high-liveness profile to verify that contextual preferences refine rather than dominate musical compatibility.
+8. A low-popularity studio profile to verify that discovery-oriented preferences can surface niche candidates.
 
 For each profile, record the top results, score breakdowns, unexpected rankings, and whether the explanation matches the actual calculation.
 
 ## Implementation Sequence
 
 1. Expand `UserProfile` with the optional fields above and validate that at least one is active.
-2. Parse and validate all 13 CSV columns.
+2. Parse and validate all 15 CSV columns.
 3. Normalize categorical text and implement the genre and mood family maps.
 4. Implement exact, related, and numeric similarity functions independently.
 5. Implement best-match scoring for multi-select categories.
@@ -256,4 +272,4 @@ For each profile, record the top results, score breakdowns, unexpected rankings,
 
 ## Decision Summary
 
-The final design uses all meaningful content features while keeping the user experience manageable. The consolidated 13-genre and 9-mood vocabulary provides several exact-match candidates per category. Multi-select preferences establish intent, while a limited set of optional related-category pairs supports discovery. Audio attributes refine musical character, and year and duration provide contextual tie-breaking. Optional controls, normalized similarities, and active-weight renormalization make the design explainable and testable for the current 60-song simulator.
+The final design uses all meaningful content features while keeping the user experience manageable. The consolidated 13-genre and 9-mood vocabulary provides several exact-match candidates per category. Multi-select preferences establish intent, while a limited set of optional related-category pairs supports discovery. Audio attributes, including liveness, refine musical character and recording context; year, duration, and popularity provide low-weight contextual tie-breaking. Optional controls, normalized similarities, and active-weight renormalization make the design explainable and testable for the current 60-song simulator.
