@@ -1,13 +1,13 @@
 flowchart LR
     A["Optional category preferences<br/>preferred_genres[]<br/>preferred_moods[]<br/>Any = exclude from score"]
-    B["Optional advanced targets<br/>energy · tempo · valence<br/>danceability · acousticness<br/>instrumentalness · year · duration"]
-    C["Song catalog<br/>all matching content features"]
+    B["Optional advanced targets<br/>energy - tempo - valence - danceability<br/>acousticness - instrumentalness - liveness<br/>release year - duration - popularity"]
+    C["Song catalog<br/>all 15 fields<br/>12 preference-bearing features"]
 
     A --> D["Calculate 0-1 similarities<br/>exact category: 1.0<br/>approved related pair: 0.5<br/>numeric: normalized distance"]
     B --> D
     C --> D
 
-    D --> E["Apply feature weights<br/>Genre 20% · Mood 20% · Energy 12%<br/>Tempo 8% · Valence 8% · Danceability 8%<br/>Acousticness 8% · Instrumentalness 6%<br/>Release year 5% · Duration 5%"]
+    D --> E["Apply feature weights<br/>Genre 18% - Mood 18% - Energy 11%<br/>Tempo 7% - Valence 7% - Danceability 7%<br/>Acousticness 7% - Instrumentalness 6% - Liveness 5%<br/>Release year 5% - Duration 4% - Popularity 5%"]
     E --> F["Renormalize using<br/>active preferences only"]
     F --> G["Sort songs<br/>highest score first"]
     G --> H["Return top recommendations<br/>with score breakdowns"]

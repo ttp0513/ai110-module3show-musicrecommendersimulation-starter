@@ -22,7 +22,7 @@ flowchart TD
     J2 --> J
     J3 --> J
 
-    J --> K["Check each numeric feature<br/>energy, tempo, valence, danceability,<br/>acousticness, instrumentalness,<br/>release year, and duration"]
+    J --> K["Check each numeric feature<br/>energy, tempo, valence, danceability,<br/>acousticness, instrumentalness, liveness,<br/>release year, duration, and popularity"]
     K --> L{"Does this feature have<br/>a user target?"}
     L -- No --> M{"More numeric<br/>features?"}
     L -- Yes --> N["Calculate distance<br/>abs(target - song value)"]
