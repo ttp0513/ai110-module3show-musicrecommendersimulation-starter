@@ -1,7 +1,7 @@
 """Load song data, calculate match scores, and rank recommendations."""
 
 from typing import List, Dict, Tuple, Optional
-from dataclasses import dataclass
+from dataclasses import asdict, dataclass
 import csv
 
 # Proposed weights in the recommender system
@@ -160,13 +160,58 @@ class Recommender:
 
     def recommend(self, user: UserProfile, k: int = 5) -> List[Song]:
         """Return up to k songs for the supplied user profile."""
-        # TODO: Implement recommendation logic
-        return self.songs[:k]
+
+        if not self.songs or k <= 0:
+            return []
+
+        user_prefs = asdict(user)
+        song_rows = [asdict(song) for song in self.songs]
+        feature_ranges = calculate_catalog_ranges(song_rows)
+
+        scored_songs = [
+            (
+                song,
+                score_song(
+                    user_prefs,
+                    song_row,
+                    feature_ranges,
+                )[0],
+            )
+            for song, song_row in zip(self.songs, song_rows)
+        ]
+
+        ranked_songs = sorted(
+            scored_songs,
+            key=lambda result: result[1],
+            reverse=True,
+        )
+        return [song for song, _ in ranked_songs[:k]]
 
     def explain_recommendation(self, user: UserProfile, song: Song) -> str:
         """Return a human-readable explanation for one recommended song."""
-        # TODO: Implement explanation logic
-        return "Explanation placeholder"
+
+        user_prefs = asdict(user)
+        song_rows = [asdict(catalog_song) for catalog_song in self.songs]
+
+        if song not in self.songs:
+            song_rows.append(asdict(song))
+
+        feature_ranges = calculate_catalog_ranges(song_rows)
+        score, reasons = score_song(
+            user_prefs,
+            asdict(song),
+            feature_ranges,
+        )
+
+        reason_lines = "\n".join(
+            f"- {reason}"
+            for reason in reasons
+        )
+        return (
+            f"{song.title} by {song.artist}\n"
+            f"Match score: {score * 100:.1f} / 100\n"
+            f"Reasons:\n{reason_lines}"
+        )
 
 def load_songs(csv_path: str) -> List[Dict]:
     """Load songs from a CSV file as a list of dictionaries."""

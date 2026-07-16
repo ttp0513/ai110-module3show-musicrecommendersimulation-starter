@@ -32,12 +32,14 @@ def make_small_recommender() -> Recommender:
 
 def test_recommend_returns_songs_sorted_by_score():
     user = UserProfile(
-        favorite_genre="pop",
-        favorite_mood="happy",
+        preferred_genres=["pop"],
+        preferred_moods=["happy"],
         target_energy=0.8,
-        likes_acoustic=False,
     )
     rec = make_small_recommender()
+
+    # Reverse the catalog so this test verifies scoring, not input order.
+    rec.songs.reverse()
     results = rec.recommend(user, k=2)
 
     assert len(results) == 2
@@ -48,10 +50,9 @@ def test_recommend_returns_songs_sorted_by_score():
 
 def test_explain_recommendation_returns_non_empty_string():
     user = UserProfile(
-        favorite_genre="pop",
-        favorite_mood="happy",
+        preferred_genres=["pop"],
+        preferred_moods=["happy"],
         target_energy=0.8,
-        likes_acoustic=False,
     )
     rec = make_small_recommender()
     song = rec.songs[0]
@@ -59,3 +60,13 @@ def test_explain_recommendation_returns_non_empty_string():
     explanation = rec.explain_recommendation(user, song)
     assert isinstance(explanation, str)
     assert explanation.strip() != ""
+    assert "Match score:" in explanation
+    assert "genre:" in explanation
+    assert "mood:" in explanation
+
+
+def test_recommend_handles_empty_catalog_and_non_positive_k():
+    user = UserProfile(preferred_genres=["pop"])
+
+    assert Recommender([]).recommend(user, k=5) == []
+    assert make_small_recommender().recommend(user, k=0) == []
