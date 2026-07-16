@@ -140,7 +140,6 @@ def main() -> None:
     }
 
     recommendations = recommend_songs(user_prefs, songs, k=5)
-
     print("\n" + "=" * 72)
     print("TOP MUSIC RECOMMENDATIONS")
     print("=" * 72)
