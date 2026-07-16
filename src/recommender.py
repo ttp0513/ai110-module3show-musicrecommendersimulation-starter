@@ -4,16 +4,18 @@ import csv
 
 # Proposed weights in the recommender system
 FEATURE_WEIGHTS = {
-    "genre": 0.20,
-    "mood": 0.20,
-    "energy": 0.12,
-    "tempo_bpm": 0.08,
-    "valence": 0.08,
-    "danceability": 0.08,
-    "acousticness": 0.08,
+    "genre": 0.18,
+    "mood": 0.18,
+    "energy": 0.11,
+    "tempo_bpm": 0.07,
+    "valence": 0.07,
+    "danceability": 0.07,
+    "acousticness": 0.07,
     "instrumentalness": 0.06,
+    "liveness": 0.05,
     "release_year": 0.05,
-    "duration_seconds": 0.05,
+    "duration_seconds": 0.04,
+    "popularity": 0.05,
 }
 
 # Proposed score_song matching
@@ -85,7 +87,7 @@ NUMERIC_FEATURE_CONFIG = (
     (
         "release_year",
         "preferred_release_year",
-        None,
+        None, # Do not use a fixed range; retrieve the current range from feature_ranges.
         "",
         0,
     ),
@@ -332,74 +334,122 @@ def score_song(user_prefs: Dict, song: Dict, feature_ranges: Dict[str, float]) -
             )
         )
 
-    # Calculate numeric similarity
-    target_energy = user_prefs.get("target_energy")
+    # Calculate a normalized similarity for every active numeric preference.
+    for (
+        feature,
+        preference_key,
+        fixed_range,
+        unit,
+        decimal_places,
+    ) in NUMERIC_FEATURE_CONFIG:
+        target = user_prefs.get(preference_key)
+        
+        # If the user did not choose a preference, ignore
+        if target is None: 
+            continue
+        
+        if fixed_range is None:
+            value_range = feature_ranges[feature] # E.g: tempo => value_range = feature_ranges["tempo_bpm"] = max - min
+        else:
+            value_range = fixed_range # E.g energy => value_range = fixed_range = 1.0
 
-    if target_energy is not None:
-        energy_similarity = calculate_numeric_similarity(
-            target=target_energy,
-            song_value=song["energy"],
+
+        similarity = calculate_numeric_similarity(
+            target=target,
+            song_value=song[feature],
+            value_range=value_range,
         )
+
+        target_display = f"{target:.{decimal_places}f}{unit}"
+        song_display = f"{song[feature]:.{decimal_places}f}{unit}"
 
         similarities.append(
             (
-                "energy",
-                energy_similarity,
+                feature,
+                similarity,
                 (
-                    f"target {target_energy:.2f}, "
-                    f"song value {song['energy']:.2f}"
+                    f"target {target_display}, "
+                    f"song value {song_display}"
                 ),
             )
         )
 
-    # TODO: Add tempo similarity using a range of 142 BPM.
-    # TODO: Add valence similarity.
-    # TODO: Add danceability similarity.
-    # TODO: Add acousticness similarity.
-    # TODO: Add instrumentalness similarity.
-    # TODO: Add release-year similarity using a range of 14 years.
-    # TODO: Add duration similarity using a range of 449 seconds.
-
     if not similarities:
-        return 0.0, ["No active preferences were provided."]
+        return 0.0, [
+            "No active preferences were provided."
+        ]
 
     active_weight = sum(
         FEATURE_WEIGHTS[feature]
-        for feature, similarity, explanation in similarities
+        for feature, _, _ in similarities
     )
 
     weighted_total = sum(
         FEATURE_WEIGHTS[feature] * similarity
-        for feature, similarity, explanation in similarities
+        for feature, similarity, _ in similarities
     )
 
-    final_score = weighted_total / _____
+    final_score = weighted_total / active_weight
 
     reasons = []
 
     for feature, similarity, explanation in similarities:
-        normalized_contribution = (
+        normalized_weight = (
             FEATURE_WEIGHTS[feature]
-            * similarity
             / active_weight
+        )
+
+        contribution = (
+            normalized_weight
+            * similarity
         )
 
         reasons.append(
             (
                 f"{feature}: {explanation}; "
-                f"similarity {similarity:.2f} × "
-                f"weight {FEATURE_WEIGHTS[feature]:.0%} "
-                f"= {normalized_contribution:.1%} of final score"
+                f"similarity {similarity:.2f} x "
+                f"normalized weight "
+                f"{normalized_weight:.1%} = "
+                f"contribution {contribution:.1%}"
             )
         )
 
-    return _____, _____
+    return final_score, reasons
 
 def recommend_songs(user_prefs: Dict, songs: List[Dict], k: int = 5) -> List[Tuple[Dict, float, str]]:
     """
     Functional implementation of the recommendation logic.
     Required by src/main.py
     """
-    # TODO: Implement scoring and ranking logic
-    # Expected return format: (song_dict, score, explanation)
-    return []
+    
+    if not songs or k <= 0:
+        return []
+
+    feature_ranges = calculate_catalog_ranges(songs)
+
+    scored_songs = []
+
+    for song in songs:
+        score, reasons = score_song(
+            user_prefs,
+            song,
+            feature_ranges,
+        )
+
+        explanation = "; ".join(reasons)
+
+        scored_songs.append(
+            (
+                song,
+                score,
+                explanation,
+            )
+        )
+
+    ranked_songs = sorted(
+        scored_songs,
+        key=lambda result: result[1],
+        reverse=True,
+    )
+
+    return ranked_songs[:k]
