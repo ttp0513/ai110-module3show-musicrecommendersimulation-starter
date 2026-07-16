@@ -10,7 +10,7 @@ The design prioritizes clear user intent while still using the expanded dataset:
 - Seven audio features refine how the music should sound, feel, and whether it resembles a live recording.
 - Release year, duration, and popularity provide lightweight contextual refinement.
 - Optional preferences are excluded from scoring rather than treated as zero.
-- Every recommendation should include a score breakdown that a user can understand.
+- Every recommendation should lead with human-friendly reasons, disclose inactive features, and make the detailed score calculation available as optional information.
 
 ## Dataset
 
@@ -100,6 +100,8 @@ The application should use progressive disclosure. Genre and mood remain visible
 `target_acousticness` replaces the earlier `likes_acoustic` Boolean. A continuous value can represent electronic, mixed, neutral, and strongly acoustic preferences instead of forcing a yes-or-no choice.
 
 An empty multi-select, **Any**, or a numeric value of `None` means **no preference**. It must be excluded from the score. It must not be converted to zero, because zero is a valid target for several audio features.
+
+The recommendation output should name these inactive fields under **Not considered**. This makes the score's scope clear: an inactive feature contributes neither credit nor a penalty, and its weight is redistributed across the active preferences.
 
 The profile is valid when at least one preference is active. If every field is empty, the app should ask the user to select a preference instead of returning an arbitrary ranking.
 
@@ -219,12 +221,35 @@ UserProfile + Song catalog
     -> apply weights and renormalize
     -> sort songs by descending score
     -> optionally rerank for artist diversity
-    -> return top k songs with explanations
+    -> return top k songs with human-friendly reasons
+    -> disclose inactive features as "Not considered"
+    -> optionally show the technical score breakdown
 ```
 
-An explanation should identify the strongest real matches and avoid claiming that every active feature matched. For example:
+### Recommender Output Design
 
-> Recommended because it matches your pop and happy preferences, its 0.82 energy is close to your 0.80 target, and its 211-second duration is near your preferred 210 seconds.
+The default explanation should identify the strongest real matches in plain language and avoid claiming that every active feature matched. Its layers are:
+
+1. **Match score:** A compatibility score out of 100, not a probability that the user will like the song.
+2. **Why this song:** Readable descriptions of the active preferences that matched well.
+3. **Trade-offs:** Active preferences that matched weakly or did not match, when applicable.
+4. **Not considered:** Available features excluded because the user did not provide those preferences.
+5. **Score breakdown:** Optional math for users who want to inspect how the result was calculated.
+
+For a profile containing only pop, happy, and `target_energy=0.80`, a human-friendly explanation could say:
+
+> This song matches your Pop genre and Happy mood preferences. Its 0.82 energy is also very close to your 0.80 target.
+
+The same result should disclose that tempo, valence, danceability, acousticness, instrumentalness, liveness, release year, duration, and popularity were not considered. Those features are not missing and do not reduce the result; they are intentionally absent from this calculation because the user did not select them.
+
+An optional technical view can expose the active calculation without making it the primary explanation:
+
+```text
+Genre:  100% match x 38.3% importance = 38.3 points
+Mood:   100% match x 38.3% importance = 38.3 points
+Energy:  98% match x 23.4% importance = 22.9 points
+```
+Here, the percentages express similarity and normalized importance, while the final values are score points. 
 
 ## Expected Biases and Risks
 
@@ -257,7 +282,7 @@ Recommended profiles include:
 7. A high-popularity, high-liveness profile to verify that contextual preferences refine rather than dominate musical compatibility.
 8. A low-popularity studio profile to verify that discovery-oriented preferences can surface niche candidates.
 
-For each profile, record the top results, score breakdowns, unexpected rankings, and whether the explanation matches the actual calculation.
+For each profile, record the top results, score breakdowns, unexpected rankings, and whether the human-friendly reasons and **Not considered** list match the actual calculation.
 
 ## Implementation Sequence
 
@@ -267,7 +292,7 @@ For each profile, record the top results, score breakdowns, unexpected rankings,
 4. Implement exact, related, and numeric similarity functions independently.
 5. Implement best-match scoring for multi-select categories.
 6. Implement weighted scoring with active-weight renormalization.
-7. Return score breakdowns for explanations and debugging.
+7. Return human-friendly reasons, inactive-feature disclosure, and optional score breakdowns for trust and debugging.
 8. Add ranking, diversity handling, and tests for full, partial, multi-select, and **Any** profiles.
 
 ## Decision Summary

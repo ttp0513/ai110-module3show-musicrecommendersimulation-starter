@@ -425,7 +425,7 @@ def recommend_songs(user_prefs: Dict, songs: List[Dict], k: int = 5) -> List[Tup
             feature_ranges,
         )
 
-        explanation = "; ".join(reasons)
+        explanation = "\n".join(reasons)
 
         scored_songs.append(
             (

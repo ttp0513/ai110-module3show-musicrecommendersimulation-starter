@@ -30,6 +30,8 @@ The expanded recommendation design supports twelve preference-bearing features:
 
 `preferred_genres` and `preferred_moods` are optional multi-select controls with an **Any** option. Exact category matches receive full credit, while a limited set of developer-defined related labels may receive partial credit. Numeric targets for the other ten features are optional advanced preferences. Unselected preferences are excluded, the remaining weights are renormalized, and at least one preference must be active. The proposed profile and formulas are documented in [Content-Based Recommender Dataset Analysis](content_based_recommender_dataset_analysis.md).
 
+Recommendation explanations use progressive disclosure: they first describe the strongest matches in plain language, then identify which available features were **not considered** because the user did not select them. A technical score breakdown can be shown as optional detail. The displayed score is a deterministic compatibility score based only on active preferences; it is not a probability that the user will like the song.
+
 
 ### Feature origin
 
@@ -95,17 +97,142 @@ You can add more tests in `tests/test_recommender.py`.
 
 ## Sample Recommendation Output
 
-Paste a sample of your recommender's output here as a text block so a reader can see what it produces:
+Running `python -m src.main` with the default Pop/Happy profile (`target_energy=0.8`) produces:
 
-# e.g.:
-# User profile: genre=indie, mood=chill, energy=low
-# Recommendations:
-#   1. ...
-#   2. ...
-#   3. ...
+```text
+Loaded songs: 60
+
+========================================================================
+TOP MUSIC RECOMMENDATIONS
+========================================================================
+
+1. Sunrise City - Neon Echo
+   Genre: Pop | Mood: Happy
+   Match score: 99.5 / 100
+
+   Why we recommended it:
+     ✓ Genre: Pop matches your Pop preference
+     ✓ Mood: Happy matches your Happy preference
+     ✓ Energy: Very close to your target
+       You requested 0.80; this song is 0.82
+
+   Based on: Genre, mood, and energy
+   Not considered: Tempo, valence, danceability, acousticness,
+     instrumentalness, liveness, release year, duration, and popularity
+
+   How the score was calculated:
+
+   Factor             Match    Importance    Score points
+   ------------------------------------------------------
+   Genre              100%         38.3%            38.3
+   Mood               100%         38.3%            38.3
+   Energy              98%         23.4%            22.9
+   ------------------------------------------------------
+   Final score                                       99.5 / 100
+   ---------------------------------------------------------------------
+
+2. Rooftop Lights - Indigo Parade
+   Genre: Indie Pop | Mood: Happy
+   Match score: 79.9 / 100
+
+   Why we recommended it:
+     ~ Genre: Indie Pop is related to your Pop preference
+     ✓ Mood: Happy matches your Happy preference
+     ✓ Energy: Very close to your target
+       You requested 0.80; this song is 0.76
+
+   Based on: Genre, mood, and energy
+   Not considered: Tempo, valence, danceability, acousticness,
+     instrumentalness, liveness, release year, duration, and popularity
+
+   How the score was calculated:
+
+   Factor             Match    Importance    Score points
+   ------------------------------------------------------
+   Genre               50%         38.3%            19.1
+   Mood               100%         38.3%            38.3
+   Energy              96%         23.4%            22.5
+   ------------------------------------------------------
+   Final score                                       79.9 / 100
+   ---------------------------------------------------------------------
+
+3. Starlight Signal - Nova Seven
+   Genre: Pop | Mood: Celebratory
+   Match score: 79.0 / 100
+
+   Why we recommended it:
+     ✓ Genre: Pop matches your Pop preference
+     ~ Mood: Celebratory is related to your Happy preference
+     ✓ Energy: Close to your target
+       You requested 0.80; this song is 0.88
+
+   Based on: Genre, mood, and energy
+   Not considered: Tempo, valence, danceability, acousticness,
+     instrumentalness, liveness, release year, duration, and popularity
+
+   How the score was calculated:
+
+   Factor             Match    Importance    Score points
+   ------------------------------------------------------
+   Genre              100%         38.3%            38.3
+   Mood                50%         38.3%            19.1
+   Energy              92%         23.4%            21.5
+   ------------------------------------------------------
+   Final score                                       79.0 / 100
+   ---------------------------------------------------------------------
+
+4. Sunlit Mosaic - Harmony Market
+   Genre: Indie Pop | Mood: Happy
+   Match score: 77.6 / 100
+
+   Why we recommended it:
+     ~ Genre: Indie Pop is related to your Pop preference
+     ✓ Mood: Happy matches your Happy preference
+     ✓ Energy: Close to your target
+       You requested 0.80; this song is 0.66
+
+   Based on: Genre, mood, and energy
+   Not considered: Tempo, valence, danceability, acousticness,
+     instrumentalness, liveness, release year, duration, and popularity
+
+   How the score was calculated:
+
+   Factor             Match    Importance    Score points
+   ------------------------------------------------------
+   Genre               50%         38.3%            19.1
+   Mood               100%         38.3%            38.3
+   Energy              86%         23.4%            20.1
+   ------------------------------------------------------
+   Final score                                       77.6 / 100
+   ---------------------------------------------------------------------
+
+5. Lagos Sunrise - Kora Avenue
+   Genre: World | Mood: Happy
+   Match score: 61.7 / 100
+
+   Why we recommended it:
+     ✗ Genre: World does not match your Pop preference
+     ✓ Mood: Happy matches your Happy preference
+     ✓ Energy: Very close to your target
+       You requested 0.80; this song is 0.80
+
+   Based on: Genre, mood, and energy
+   Not considered: Tempo, valence, danceability, acousticness,
+     instrumentalness, liveness, release year, duration, and popularity
+
+   How the score was calculated:
+
+   Factor             Match    Importance    Score points
+   ------------------------------------------------------
+   Genre                0%         38.3%             0.0
+   Mood               100%         38.3%            38.3
+   Energy             100%         23.4%            23.4
+   ------------------------------------------------------
+   Final score                                       61.7 / 100
+   ---------------------------------------------------------------------
 ```
 
-**Screenshot or video** *(optional)*: <!-- Insert a screenshot or demo video link here -->
+Only genre, mood, and energy affect this run. Tempo, valence, danceability, acousticness, instrumentalness, liveness, release year, duration, and popularity are not considered because the default profile does not select them; they receive neither credit nor a penalty.
 
 ---
 

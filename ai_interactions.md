@@ -10,19 +10,32 @@
 
 **What task did you give the agent?**
 
-<!-- Describe the goal you asked the agent to accomplish -->
+Expand the music dataset to meet the stretch requirement of at least five attributes not found in the baseline data. Add synthetic popularity and liveness values without changing existing song fields, update the design documentation and diagrams, and intentionally defer changes to `src/main.py` and `src/recommender.py`.
 
 **Prompts used:**
 
-<!-- Paste the key prompts you gave the agent -->
+> "Introduce 5 or more complex attributes to your dataset that are not currently present in the baseline data... Update both data/songs.csv and the scoring logic in src/recommender.py so scoring accounts for the new attributes."
+
 
 **What did the agent generate or change?**
 
-<!-- List the files edited, code generated, or commands run -->
+- Added `popularity` and `liveness` columns to all 60 rows in `data/songs.csv`.
+- Assigned synthetic integer popularity values on a 0-100 scale and synthetic liveness values on a 0-1 scale.
+- Revised the proposed scoring design to 12 preference-bearing features with weights totaling 100%.
+- Added the popularity normalization formula and documented liveness as a standard 0-1 distance calculation.
+- Updated `README.md`, `content_based_recommender_dataset_analysis.md`, `diagrams/recommender_system_flow.mmd`, `diagrams/recommender_system_flow.svg`, and `diagrams/score_song_learning_flow.mmd`.
+- Documented popularity feedback-loop risk, synthetic-liveness limitations, feature provenance, and the decision to derive release decade from release year.
+- Left `src/main.py` and `src/recommender.py` unchanged as requested; their loading and scoring updates are deferred.
 
 **What did you verify or fix manually?**
 
-<!-- Describe anything the agent got wrong or that required human review -->
+- Confirmed 60 data rows, 15 columns, unique IDs, and no missing cells.
+- Compared all 13 pre-existing fields against the repository baseline and found zero changed cells, preserving the original song data.
+- Confirmed every popularity value is an integer within 0-100; the generated range is 29-90.
+- Confirmed every liveness value is numeric within 0-1; the generated range is 0.04-0.83.
+- Added the proposed feature weights independently and confirmed that they total 100%.
+- Parsed the updated SVG as XML and confirmed its 1400 x 420 canvas and updated labels. A browser-rendered preview was unavailable in the session, so visual inspection should be repeated in the IDE or GitHub preview.
+- Compared SHA-256 hashes before and after the workflow to confirm that `src/main.py` and `src/recommender.py` were not modified.
 
 ---
 

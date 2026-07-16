@@ -10,4 +10,4 @@ flowchart LR
     D --> E["Apply feature weights<br/>Genre 18% - Mood 18% - Energy 11%<br/>Tempo 7% - Valence 7% - Danceability 7%<br/>Acousticness 7% - Instrumentalness 6% - Liveness 5%<br/>Release year 5% - Duration 4% - Popularity 5%"]
     E --> F["Renormalize using<br/>active preferences only"]
     F --> G["Sort songs<br/>highest score first"]
-    G --> H["Return top recommendations<br/>with score breakdowns"]
+    G --> H["Return top recommendations<br/>with human-friendly reasons<br/>not-considered features<br/>and optional score details"]
