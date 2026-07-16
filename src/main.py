@@ -24,6 +24,56 @@ REASON_PATTERN = re.compile(
 )
 
 
+HIGH_ENERGY_POP = {
+    "preferred_genres": ["pop"],
+    "preferred_moods": ["happy"],
+    "target_energy": 0.90,
+    "target_valence": 0.85,
+    "target_danceability": 0.85,
+}
+
+CHILL_LOFI = {
+    "preferred_genres": ["lofi"],
+    "preferred_moods": ["chill"],
+    "target_energy": 0.20,
+    "target_acousticness": 0.70,
+    "target_instrumentalness": 0.85,
+}
+
+DEEP_INTENSE_ROCK = {
+    "preferred_genres": ["rock"],
+    "preferred_moods": ["intense"],
+    "target_energy": 0.90,
+    "target_valence": 0.25,
+    "target_tempo_bpm": 150,
+}
+
+SAD_BUT_EUPHORIC = {
+    "preferred_moods": ["sad"],
+    "target_energy": 0.95,
+    "target_valence": 0.95,
+}
+
+MOODY_BUT_EUPHORIC = {
+    "preferred_moods": ["moody"],
+    "target_energy": 0.95,
+    "target_valence": 0.95,
+}
+
+POPULARITY_ONLY = {
+    "target_popularity": 100,
+}
+
+USER_PROFILES = {
+    "High-Energy Pop": HIGH_ENERGY_POP,
+    "Chill Lofi": CHILL_LOFI,
+    "Deep Intense Rock": DEEP_INTENSE_ROCK,
+    "Adversarial: Sad but Euphoric": SAD_BUT_EUPHORIC,
+    "Adversarial: Moody but Euphoric": MOODY_BUT_EUPHORIC,
+    "Edge Case: Popularity Only": POPULARITY_ONLY,
+}
+
+
 def format_feature_name(feature: str) -> str:
     """Convert an internal feature key into a readable label."""
 
@@ -123,23 +173,14 @@ def join_feature_names(names):
         return f"{names[0]} and {names[1]}"
     return f"{', '.join(names[:-1])}, and {names[-1]}"
 
-def main() -> None:
-    """Load a sample profile and print its ranked song recommendations."""
-
-    # Use UTF-8 so Windows terminals can display the recommendation checkmarks.
-    if hasattr(sys.stdout, "reconfigure"):
-        sys.stdout.reconfigure(encoding="utf-8")
-
-    songs = load_songs("data/songs.csv")
-
-    # Example profile using the preference names expected by score_song().
-    user_prefs = {
-        "preferred_genres": ["pop"],
-        "preferred_moods": ["happy"],
-        "target_energy": 0.8,
-    }
+def print_profile_recommendations(profile_name, user_prefs, songs):
+    """Print the top five recommendations for one evaluation profile."""
 
     recommendations = recommend_songs(user_prefs, songs, k=5)
+    print("\n" + "#" * 72)
+    print(f"PROFILE: {profile_name}")
+    print(f"Preferences: {user_prefs}")
+    print("#" * 72)
     print("\n" + "=" * 72)
     print("TOP MUSIC RECOMMENDATIONS")
     print("=" * 72)
@@ -238,6 +279,23 @@ def main() -> None:
         print("   " + "-" * 69)
 
     print()
+
+
+def main() -> None:
+    """Run all realistic, adversarial, and edge-case user profiles."""
+
+    # Use UTF-8 so Windows terminals can display the recommendation checkmarks.
+    if hasattr(sys.stdout, "reconfigure"):
+        sys.stdout.reconfigure(encoding="utf-8")
+
+    songs = load_songs("data/songs.csv")
+
+    for profile_name, user_prefs in USER_PROFILES.items():
+        print_profile_recommendations(
+            profile_name,
+            user_prefs,
+            songs,
+        )
 
 
 if __name__ == "__main__":

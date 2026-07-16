@@ -37,6 +37,30 @@ Expand the music dataset to meet the stretch requirement of at least five attrib
 - Parsed the updated SVG as XML and confirmed its 1400 x 420 canvas and updated labels. A browser-rendered preview was unavailable in the session, so visual inspection should be repeated in the IDE or GitHub preview.
 - Compared SHA-256 hashes before and after the workflow to confirm that `src/main.py` and `src/recommender.py` were not modified.
 
+### System Evaluation Workflow
+
+**Prompt used:**
+
+> Review `src/main.py`, `src/recommender.py`, and `data/songs.csv` as a system evaluator. Suggest realistic and adversarial user profiles that can reveal unexpected rankings, conflicting preferences, unsupported categories, or excessive dependence on one feature. Run the recommender for each profile and evaluate the top five songs using the generated scores and reasons.
+
+**Profiles generated:**
+
+- High-Energy Pop
+- Chill Lofi
+- Deep Intense Rock
+- Adversarial: Sad but Euphoric
+- Adversarial: Moody but Euphoric
+- Edge Case: Popularity Only
+
+**Manual verification notes:**
+
+- Confirmed that all six profiles execute against the same 60-song catalog and return five ranked songs.
+- Confirmed that realistic profiles surface category-appropriate results.
+- Verified that the unsupported `sad` mood receives zero mood similarity instead of silently becoming an exact or related match.
+- Verified that the valid but conflicting Moody/Euphoric profile exposes the effect of active-weight normalization.
+- Verified that a popularity-only profile produces a popularity ranking, demonstrating the limitation of overly sparse preference input.
+- Copied the actual terminal output, including titles, scores, reasons, and calculations, into fenced code blocks under `README.md` → **Experiments You Tried**.
+
 ---
 
 ## Design Pattern (SF10)
