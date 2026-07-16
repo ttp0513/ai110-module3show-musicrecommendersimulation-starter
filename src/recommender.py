@@ -1,3 +1,5 @@
+"""Load song data, calculate match scores, and rank recommendations."""
+
 from typing import List, Dict, Tuple, Optional
 from dataclasses import dataclass
 import csv
@@ -109,10 +111,7 @@ NUMERIC_FEATURE_CONFIG = (
 
 @dataclass
 class Song:
-    """
-    Represents a song and its attributes.
-    Required by tests/test_recommender.py
-    """
+    """Store one song's metadata used for display and recommendation scoring."""
     id: int
     title: str
     artist: str
@@ -131,10 +130,7 @@ class Song:
 
 @dataclass
 class UserProfile:
-    """
-    Represents the user's taste preferences.
-    Required by tests/test_recommender.py
-    """
+    """Store the listener's optional preferences used to score songs."""
 
     # The defaults are None so when the user did not specify a certain preference,
     # the scoring function should skip it and renormalize the remaining weights.
@@ -156,18 +152,19 @@ class UserProfile:
     
 
 class Recommender:
-    """
-    OOP implementation of the recommendation logic.
-    Required by tests/test_recommender.py
-    """
+    """Provide the object-oriented interface for recommending songs."""
+
     def __init__(self, songs: List[Song]):
+        """Initialize the recommender with a catalog of songs."""
         self.songs = songs
 
     def recommend(self, user: UserProfile, k: int = 5) -> List[Song]:
+        """Return up to k songs for the supplied user profile."""
         # TODO: Implement recommendation logic
         return self.songs[:k]
 
     def explain_recommendation(self, user: UserProfile, song: Song) -> str:
+        """Return a human-readable explanation for one recommended song."""
         # TODO: Implement explanation logic
         return "Explanation placeholder"
 
@@ -220,8 +217,7 @@ def calculate_category_similarity(
     preferred_values: List[str],
     related_pairs: set,
 ) -> Tuple[float, str]: 
-    """ Answer how closely does this song's category match the user's selected categories
-    Return a tuple (similarity_number, explanation)"""
+    """Return a category similarity score and its explanation."""
 
     normalized_song = song_value.strip().lower()
 
@@ -284,11 +280,7 @@ def calculate_catalog_ranges(
     return feature_ranges
 
 def score_song(user_prefs: Dict, song: Dict, feature_ranges: Dict[str, float]) -> Tuple[float, List[str]]:
-    """
-    Scores a single song against user preferences.
-    Required by recommend_songs() and src/main.py
-    feature_ranges contains the current catalog ranges for tempo, release year, and duration.
-    """
+    """Return one song's weighted match score and explanation reasons."""
     
     # Every active preference will add a tuple with this structure:
     # (feature_name, similarity, explanation)
@@ -417,10 +409,7 @@ def score_song(user_prefs: Dict, song: Dict, feature_ranges: Dict[str, float]) -
     return final_score, reasons
 
 def recommend_songs(user_prefs: Dict, songs: List[Dict], k: int = 5) -> List[Tuple[Dict, float, str]]:
-    """
-    Functional implementation of the recommendation logic.
-    Required by src/main.py
-    """
+    """Score the catalog and return the top k songs from highest to lowest."""
     
     if not songs or k <= 0:
         return []
