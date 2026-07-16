@@ -10,7 +10,7 @@
 
 **What task did you give the agent?**
 
-Expand the music dataset to meet the stretch requirement of at least five attributes not found in the baseline data. Add synthetic popularity and liveness values without changing existing song fields, update the design documentation and diagrams, and intentionally defer changes to `src/main.py` and `src/recommender.py`.
+Expand the music dataset to meet the stretch requirement of at least five attributes not found in the baseline data. Check the document and workflow and help debug. 
 
 **Prompts used:**
 
