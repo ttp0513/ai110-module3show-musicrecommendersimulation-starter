@@ -1,111 +1,152 @@
 # 🎧 Model Card: Music Recommender Simulation
 
-## 1. Model Name  
+## 1. Model Name
 
-Give your model a short, descriptive name.  
-Example: **VibeFinder 1.0**  
+**VibeMatch 1.0**
 
----
-
-## 2. Intended Use  
-
-Describe what your recommender is designed to do and who it is for. 
-
-Prompts:  
-
-- What kind of recommendations does it generate  
-- What assumptions does it make about the user  
-- Is this for real users or classroom exploration  
+This name reflects the goal of matching songs to a listener's preferred sound and mood.
 
 ---
 
-## 3. How the Model Works  
+## 2. Intended Use
 
-Explain your scoring approach in simple language.  
+VibeMatch generates ranked song recommendations. It is a CLI-first classroom simulation.
 
-Prompts:  
+The system is designed for students learning about recommender systems. It is not a production music service. It does not predict whether a real person will like a song.
 
-- What features of each song are used (genre, energy, mood, etc.)  
-- What user preferences are considered  
-- How does the model turn those into a score  
-- What changes did you make from the starter logic  
+The system assumes that the user can describe their current preferences. The user can select categories such as genre and mood. The user can also provide numeric targets such as energy or danceability.
 
-Avoid code here. Pretend you are explaining the idea to a friend who does not program.
+The output includes five songs, compatibility scores, and reasons. The scores show similarity to the selected preferences. They are not probabilities.
 
 ---
 
-## 4. Data  
+## 3. How the Model Works
 
-Describe the dataset the model uses.  
+VibeMatch uses content-based filtering. It compares one user profile with every song in the catalog.
 
-Prompts:  
+The model can consider these song features:
 
-- How many songs are in the catalog  
-- What genres or moods are represented  
-- Did you add or remove data  
-- Are there parts of musical taste missing in the dataset  
+- Genre and mood.
+- Energy and tempo.
+- Valence and danceability.
+- Acousticness and instrumentalness.
+- Liveness.
+- Release year and duration.
+- Popularity.
 
----
+An exact genre or mood match receives full similarity. A small set of related categories receives partial similarity. Unrelated categories receive zero similarity.
 
-## 5. Strengths  
+Numeric features use distance. A song closer to the user's target receives a higher similarity. A song farther away receives a lower similarity.
 
-Where does your system seem to work well  
+Each active feature has a weight. The system multiplies similarity by weight. It then adds the results. Unselected preferences are excluded. The remaining active weights are normalized before the final score is returned.
 
-Prompts:  
-
-- User types for which it gives reasonable results  
-- Any patterns you think your scoring captures correctly  
-- Cases where the recommendations matched your intuition  
-
----
-
-## 6. Limitations and Bias 
-
-Where the system struggles or behaves unfairly. 
-
-Prompts:  
-
-- Features it does not consider  
-- Genres or moods that are underrepresented  
-- Cases where the system overfits to one preference  
-- Ways the scoring might unintentionally favor some users  
+The starter logic used fewer preferences and simpler scoring.
 
 ---
 
-## 7. Evaluation  
+## 4. Data
 
-How you checked whether the recommender behaved as expected. 
+The catalog contains 60 songs. The starter catalog contained 10 songs. The project added 50 synthetic songs without changing the original rows.
 
-Prompts:  
+The catalog contains 13 genres:
 
-- Which user profiles you tested  
-- What you looked for in the recommendations  
-- What surprised you  
-- Any simple tests or comparisons you ran  
+- Ambient, classical, electronic, folk, and hip hop.
+- Indie pop, jazz, Latin, lofi, and pop.
+- Rock, synthwave, and world.
 
-No need for numeric metrics unless you created some.
+The catalog contains nine moods:
 
----
+- Celebratory, chill, confident, focused, and happy.
+- Intense, moody, relaxed, and romantic.
 
-## 8. Future Work  
+Each row has 15 fields. Five fields were added during the project: release year, duration, instrumentalness, popularity, and liveness.
 
-Ideas for how you would improve the model next.  
+The song names and most metadata are synthetic. Popularity and liveness are classroom estimates. They are not measurements from Spotify, YouTube, or audio analysis.
 
-Prompts:  
-
-- Additional features or preferences  
-- Better ways to explain recommendations  
-- Improving diversity among the top results  
-- Handling more complex user tastes  
+The dataset does not cover every musical culture or listener need. It does not include a `sad` mood. It also lacks lyrics, language, location, and real listening history.
 
 ---
 
-## 9. Personal Reflection  
+## 5. Strengths
 
-A few sentences about your experience.  
+The model works well when the catalog contains several songs that match the user's categories.
 
-Prompts:  
+The High-Energy Pop profile returned Pop and related Indie Pop songs. The Chill Lofi profile returned Lofi songs first. It also found related Ambient songs. The Deep Intense Rock profile returned five Rock and Intense songs.
 
-- What you learned about recommender systems  
-- Something unexpected or interesting you discovered  
-- How this changed the way you think about music recommendation apps  
+The scoring system handles partial profiles. It ignores missing preferences instead of treating them as zero. This prevents an unanswered control from becoming a negative preference.
+
+The output is easy to inspect. It shows strong matches, partial matches, and mismatches. It also shows which features were not considered.
+
+The same inputs always produce the same ranking. This makes the model easy to test and debug.
+
+---
+
+## 6. Limitations and Bias
+
+The catalog is small. Some genres and moods have more examples than others. Users with common preferences have more choices.
+
+The category relationships were written by the developer. They are not learned from listener behavior. They may reflect personal or cultural assumptions.
+
+The feature weights are also developer choices. Genre and mood can dominate some profiles. Related numeric features may count a similar idea more than once. Energy, tempo, and danceability are one example.
+
+Unsupported labels are not rejected. The test profile requested `sad`, but `sad` is not in the dataset. The system still returned celebratory songs because their energy and valence were close.
+
+Sparse profiles can be misleading. A popularity-only profile becomes a popularity ranking. It does not represent broad musical taste.
+
+Conflicting preferences can still produce high scores. The Moody but Euphoric profile ranked exact Moody songs even when their valence was far from the target.
+
+The numeric distance formula is simple and linear. The same energy gap receives the same penalty in every context. The model cannot understand that two listeners may interpret energy differently.
+
+The system has no plays, skips, likes, replays, or playlist history. It cannot learn or update a user's taste automatically.
+
+---
+
+## 7. Evaluation
+
+I tested three realistic profiles:
+
+1. High-Energy Pop.
+2. Chill Lofi.
+3. Deep Intense Rock.
+
+I also tested three difficult profiles:
+
+1. Sad but Euphoric.
+2. Moody but Euphoric.
+3. Popularity Only.
+
+For each profile, I reviewed the top five songs. I checked the order, score, genre, mood, and explanation. The complete CLI output appears in the README under **Experiments You Tried**.
+
+I also ran two sensitivity experiments. I doubled the energy weight and halved the genre weight. I then removed mood from scoring. These changes showed which rankings were stable and which relied heavily on one feature.
+
+The normalized active weights still summed to 1. All scores stayed between 0 and 1. The full calculations appear in the [Scoring Sensitivity Experiment](scoring_sensitivity_experiment.md).
+
+The most surprising result came from the unsupported `sad` mood. Every song received zero mood credit. The system still returned upbeat songs because it had no validation rule to stop the ranking.
+
+---
+
+## 8. Future Work
+
+I would validate genre and mood before scoring. An unsupported value should show a warning or suggest supported alternatives.
+
+I would add a minimum-input rule. A user should select more than popularity alone before receiving a personalized result.
+
+I would detect conflicting preferences. The interface could explain the conflict before ranking songs.
+
+I would add a diversity step after scoring. This could limit repeated artists, genres, or moods in the top five.
+
+I would use real listening behavior when available. Plays, skips, likes, and replays could support a hybrid recommender.
+
+I would test learned category relationships instead of relying only on hand-written pairs. I would also add lyrics, language, and artist similarity.
+
+---
+
+## 9. Personal Reflection
+
+My biggest learning moment was understanding active-weight normalization. Removing a preference must remove both its score contribution and its weight. Otherwise, the model unfairly lowers every result.
+
+AI tools helped me expand the dataset, review the design, suggest edge cases, and format explanations. They also helped me compare several profiles quickly. I still needed to check the CSV types, feature ranges, formulas, and terminal output. I also checked that the original rows were preserved. AI suggestions about related genres and moods needed extra review because those choices are subjective.
+
+I was surprised that a weighted sum could feel like a real recommendation. A song title, a score, and a few clear reasons made the result feel personal. The sensitivity tests showed that this feeling can be misleading when the input is unsupported or too narrow.
+
+If I extended the project, I would build input validation first. I would then add diversity reranking and listener feedback. Finally, I would compare this content-based model with a collaborative or hybrid recommender.
