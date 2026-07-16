@@ -1172,14 +1172,13 @@ TOP MUSIC RECOMMENDATIONS
 
 - The catalog contains only 60 songs, and most added metadata values are synthetic rather than platform measurements.
 - The system has no behavioral feedback such as plays, skips, likes, replays, or playlist co-occurrence, so it cannot learn preferences automatically.
-- Related genre and mood pairs reflect developer assumptions and may not represent every listener or cultural context.
-- Static feature weights may overemphasize genre and mood or count correlated signals, such as energy and tempo, more than once.
-- Synthetic popularity is not evidence of real audience interest and may encourage mainstream-exposure bias if weighted too heavily.
-- Synthetic liveness is not derived from audio analysis and should be treated as a classroom estimate rather than a measured probability.
+- Related genre and mood pairs reflect developer's assumptions and may not represent every listener or cultural context.
 - The model does not analyze lyrics, language, artist similarity, recency trends, or changes in a listener's taste over time.
 - A small or uneven catalog limits recommendation diversity and may provide more choices for some categories than others.
+- Unsupported category values are not rejected. In the experiment, `sad` matched no catalog mood, yet the system still returned celebratory songs based on energy and valence.
+- Sparse or conflicting profiles can produce deceptively high compatibility scores. For example, removing mood nearly doubled the Sad/Euphoric score, while a popularity-only profile became a non-personalized popularity ranking.
 
-These limitations are partially mitigated through visible score explanations, optional preferences, active-weight renormalization, category-level evaluation, and the ability to disable related-category rules. Additional technical detail appears in the [Content-Based Recommender Dataset Analysis](content_based_recommender_dataset_analysis.md) and `model_card.md`.
+The sensitivity tests exposed two concrete weaknesses: the system needs validation for unsupported labels, and it needs a warning or minimum-input policy for sparse and conflicting profiles. These limitations are partially mitigated through visible score explanations, optional preferences, active-weight renormalization, category-level evaluation, and the ability to disable related-category rules. See the [Scoring Sensitivity Experiment](scoring_sensitivity_experiment.md) for the tested logic changes, ranking comparisons, and math verification. Additional design detail appears in the [Content-Based Recommender Dataset Analysis](content_based_recommender_dataset_analysis.md) and `model_card.md`.
 
 ---
 
@@ -1193,6 +1192,5 @@ Write 1 to 2 paragraphs here about what you learned:
 
 - about how recommenders turn data into predictions
 - about where bias or unfairness could show up in systems like this
-
 
 
