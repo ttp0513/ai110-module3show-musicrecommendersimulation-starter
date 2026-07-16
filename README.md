@@ -1182,15 +1182,5 @@ The sensitivity tests exposed two concrete weaknesses: the system needs validati
 
 ---
 
-## Reflection
-
-Read and complete `model_card.md`:
-
-[**Model Card**](model_card.md)
-
-Write 1 to 2 paragraphs here about what you learned:
-
-- about how recommenders turn data into predictions
-- about where bias or unfairness could show up in systems like this
 
 
