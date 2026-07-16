@@ -16,10 +16,94 @@ FEATURE_WEIGHTS = {
     "duration_seconds": 0.05,
 }
 
+# Proposed score_song matching
 EXACT_SCORE = 1.0
 RELATED_SCORE = 0.5
-UNRELATED_SCORE = 0
+UNRELATED_SCORE = 0.0
 
+# Developer-defined category relationships. Frozensets make each
+# relationship bidirectional, so each pair only needs to be declared once.
+RELATED_GENRE_PAIRS = {
+    frozenset(("pop", "indie pop")),
+    frozenset(("lofi", "ambient")),
+    frozenset(("electronic", "synthwave")),
+    frozenset(("latin", "world")),
+}
+
+RELATED_MOOD_PAIRS = {
+    frozenset(("happy", "celebratory")),
+    frozenset(("chill", "relaxed")),
+    frozenset(("chill", "focused")),
+    frozenset(("intense", "confident")),
+}
+
+DYNAMIC_RANGE_FEATURES = (
+    "tempo_bpm",
+    "release_year",
+    "duration_seconds",
+)
+
+NUMERIC_FEATURE_CONFIG = (
+    # song feature, userprofile preference field, fixed range, unit, decimals
+    ("energy", "target_energy", 1.0, "", 2),
+    (
+        "tempo_bpm",
+        "target_tempo_bpm",
+        None,
+        " BPM",
+        0,
+    ),
+    ("valence", "target_valence", 1.0, "", 2),
+    (
+        "danceability",
+        "target_danceability",
+        1.0,
+        "",
+        2,
+    ),
+    (
+        "acousticness",
+        "target_acousticness",
+        1.0,
+        "",
+        2,
+    ),
+    (
+        "instrumentalness",
+        "target_instrumentalness",
+        1.0,
+        "",
+        2,
+    ),
+    (
+        "liveness",
+        "target_liveness",
+        1.0,
+        "",
+        2,
+    ),
+    (
+        "release_year",
+        "preferred_release_year",
+        None,
+        "",
+        0,
+    ),
+    (
+        "duration_seconds",
+        "preferred_duration_seconds",
+        None,
+        " seconds",
+        0,
+    ),
+    (
+        "popularity",
+        "target_popularity",
+        100.0,
+        "/100",
+        0,
+    ),
+)
 
 @dataclass
 class Song:
@@ -40,6 +124,8 @@ class Song:
     release_year: int = 0
     duration_seconds: int = 0
     instrumentalness: float = 0.0
+    popularity: int = 0
+    liveness: float = 0.0
 
 @dataclass
 class UserProfile:
@@ -60,9 +146,11 @@ class UserProfile:
     target_danceability: Optional[float] = None
     target_acousticness: Optional[float] = None
     target_instrumentalness: Optional[float] = None
+    target_liveness: Optional[float] = None
 
     preferred_release_year: Optional[int] = None
     preferred_duration_seconds: Optional[int] = None
+    target_popularity: Optional[int] = None
     
 
 class Recommender:
@@ -90,6 +178,7 @@ def load_songs(csv_path: str) -> List[Dict]:
         "id",
         "release_year",
         "duration_seconds",
+        "popularity",
     ]
 
     float_fields = [
@@ -99,6 +188,7 @@ def load_songs(csv_path: str) -> List[Dict]:
         "danceability",
         "acousticness",
         "instrumentalness",
+        "liveness",
     ]
 
     with open(
@@ -128,7 +218,7 @@ def calculate_category_similarity(
     preferred_values: List[str],
     related_pairs: set,
 ) -> Tuple[float, str]: 
-    """ Answer how closely does this song's category match the user's selected categories'
+    """ Answer how closely does this song's category match the user's selected categories
     Return a tuple (similarity_number, explanation)"""
 
     normalized_song = song_value.strip().lower()
@@ -149,32 +239,106 @@ def calculate_category_similarity(
 
     return UNRELATED_SCORE, "no category match"
 
+def calculate_numeric_similarity(
+    target: float,
+    song_value: float,
+    value_range: float = 1.0, 
+) -> float:
+    """Return a 0-1 similarity score based on normalized numeric distance."""
+    
+    difference = abs(target - song_value)
+    similarity = 1.0 - difference / value_range
+    return max(0.0, similarity)
 
-def score_song(user_prefs: Dict, song: Dict) -> Tuple[float, List[str]]:
+def calculate_catalog_ranges(
+    songs: List[Dict],
+) -> Dict[str, float]:
+    """Calculate normalization ranges from the current song catalog."""
+
+    if not songs:
+        raise ValueError(
+            "Cannot calculate feature ranges from an empty catalog."
+        )
+
+    feature_ranges = {}
+
+    for feature in DYNAMIC_RANGE_FEATURES:
+        values = [
+            song[feature]
+            for song in songs
+        ]
+
+        minimum = min(values)
+        maximum = max(values)
+
+        observed_range = maximum - minimum
+        
+        # Used 1.0 to prevent dividing by zero
+        feature_ranges[feature] = max(
+            1.0,
+            observed_range,
+        )
+
+    return feature_ranges
+
+def score_song(user_prefs: Dict, song: Dict, feature_ranges: Dict[str, float]) -> Tuple[float, List[str]]:
     """
     Scores a single song against user preferences.
     Required by recommend_songs() and src/main.py
+    feature_ranges contains the current catalog ranges for tempo, release year, and duration.
     """
     
     # Every active preference will add a tuple with this structure:
     # (feature_name, similarity, explanation)
     
     similarities = []
+    
+    # Calculate genre similarility 
+    
+    preferred_genres = user_prefs.get("preferred_genres")
+    if preferred_genres:
+        genre_similarity, genre_explanation = (
+            calculate_category_similarity(
+                song_value=song["genre"],
+                preferred_values = preferred_genres,
+                related_pairs = RELATED_GENRE_PAIRS,
+            )
+        )
 
-    # TODO: Calculate genre similarity.
-    # Add ("genre", similarity, explanation) when genre is active.
+        similarities.append(
+            (
+                "genre",
+                genre_similarity,
+                genre_explanation,
+            )
+        )
+        
+    # Calculate mood similarility 
+    preferred_moods = user_prefs.get("preferred_moods")
 
-    # TODO: Calculate mood similarity.
-    # Add ("mood", similarity, explanation) when mood is active.
+    if preferred_moods:
+        mood_similarity, mood_explanation = (
+            calculate_category_similarity(
+                song_value=song["mood"],
+                preferred_values=preferred_moods,
+                related_pairs=RELATED_MOOD_PAIRS,
+            )
+        )
+        similarities.append(
+            (
+                "mood",
+                mood_similarity,
+                mood_explanation,
+            )
+        )
 
+    # Calculate numeric similarity
     target_energy = user_prefs.get("target_energy")
 
     if target_energy is not None:
-        energy_similarity = max(
-            0.0,
-            1.0 - abs(
-                target_energy - song["energy"]
-            ),
+        energy_similarity = calculate_numeric_similarity(
+            target=target_energy,
+            song_value=song["energy"],
         )
 
         similarities.append(
@@ -182,8 +346,8 @@ def score_song(user_prefs: Dict, song: Dict) -> Tuple[float, List[str]]:
                 "energy",
                 energy_similarity,
                 (
-                    f"energy {song['energy']:.2f} is close to "
-                    f"target {target_energy:.2f}"
+                    f"target {target_energy:.2f}, "
+                    f"song value {song['energy']:.2f}"
                 ),
             )
         )
